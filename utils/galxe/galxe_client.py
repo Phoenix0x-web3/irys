@@ -55,7 +55,7 @@ class GalxeClient():
             if network.name in Settings().network_for_bridge:
                 client = Client(private_key=self.client.account._private_key.hex(), network=network, proxy=self.client.proxy)
                 balance = await client.wallet.balance()
-                if balance.Ether > 0.00006:
+                if balance.Ether > Settings().random_eth_for_bridge_max:
                     base_client = Base(client=client, wallet=self.wallet)
                     return base_client
 
@@ -67,7 +67,7 @@ class GalxeClient():
             logger.warning(f"{self.wallet} no one Network can be choisen for ETH transfer")
             return False
         start_balance = await self.client.wallet.balance()
-        amount_for_bridge = random.uniform(0.00003, 0.00006)
+        amount_for_bridge = random.uniform(Settings().random_eth_for_bridge_min, Settings().random_eth_for_bridge_max)
         bridge = await self.galxe_onchain.gas_zip_bridge(client=base_client, amount=TokenAmount(amount_for_bridge))
         if not bridge:
             return False

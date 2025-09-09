@@ -31,6 +31,8 @@ class Settings(Singleton):
         self.capmonster_api_key = json_data.get("capmonster_api_key", "")
         self.network_for_bridge = json_data.get("network_for_bridge", [])
         self.auto_replace_proxy = json_data.get("auto_replace_proxy ", True)
+        self.random_eth_for_bridge_min = json_data.get("random_eth_for_bridge", {}).get('min')
+        self.random_eth_for_bridge_max = json_data.get("random_eth_for_bridge", {}).get('max')
         
         self.tg_bot_id = json_data.get("tg_bot_id", "")
         self.tg_user_id = json_data.get("tg_user_id", "")

@@ -60,3 +60,7 @@ tg_user_id: ""
 capmonster_api_key: ""
 #Network can use for bridge to Gravity, for Galxe quests. Available: ethereum, arbitrum, base, optimism, ink, mode, bsc, op_bnb, polygon, soneium, lisk, unichain, avalanche, zksync 
 network_for_bridge: [arbitrum, base, optimism]
+#Random diaposon for ETH bridge. (0.1$ - 0.5$ in ETH default)
+random_eth_for_bridge:
+  min: 0.000025
+  max: 0.0001
