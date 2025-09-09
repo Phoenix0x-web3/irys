@@ -1,4 +1,5 @@
 from loguru import logger
+import random
 from libs.eth_async.client import Client
 from libs.base import Base
 from modules.irys_client import Irys
@@ -24,5 +25,12 @@ class Controller:
         return await self.irys_client.handle_game()
 
     async def complete_galxe_quests(self):
-        return await self.irys_client.complete_galxe_quests()
+        functions = [
+            self.irys_client.complete_twitter_galxe_quests,
+            self.irys_client.complete_galxe_quests,
+        ]
+        random.shuffle(functions)
+        for func in functions:
+            await func()
+        return
 

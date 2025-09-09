@@ -1,4 +1,5 @@
 import copy
+import asyncio
 from dataclasses import dataclass
 from curl_cffi.requests import Response
 import urllib.parse
@@ -102,7 +103,7 @@ class TwitterClient():
 
         if self.twitter_account.status == twitter.AccountStatus.GOOD:
             logger.success(f"{self.user} Twitter client initialized")
-            update_twitter_token(private_key=self.user.private_key, updated_token=self.twitter_account.auth_token)
+            update_twitter_token(address=self.user.address, updated_token=self.twitter_account.auth_token)
             return True
         else:
             error_msg = f"Problem with Twitter account status: {self.twitter_account.status}"

@@ -10,6 +10,7 @@ REQUIRED_FILES = [
     "private_keys.txt",
     "proxy.txt",
     "reserve_proxy.txt",
+    "twitter_tokens.txt",
 ]
 
 def create_files() -> None:

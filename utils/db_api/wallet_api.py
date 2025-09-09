@@ -23,6 +23,28 @@ def get_wallet_by_address(address: str, sqlite_query: bool = False) -> Wallet | 
 
     return db.one(Wallet, Wallet.address == address)
 
+def update_twitter_token(address: str, updated_token: str | None) -> bool:
+    """
+    Updates the Twitter token for a wallet with the given private_key.
+    
+    Args:
+        address: The address of the wallet to update
+        new_token: The new Twitter token to set
+    
+    Returns:
+        bool: True if update was successful, False if wallet not found
+    """
+    if not updated_token:
+        return False
+
+    wallet = db.one(Wallet, Wallet.address == address)
+    if not wallet:
+        return False
+    
+    wallet.twitter_token = updated_token
+    db.commit()
+    return True
+
 def update_next_game_time(address:str, next_game_action_time) -> bool:
     wallet = db.one(Wallet, Wallet.address == address)
     if not wallet:

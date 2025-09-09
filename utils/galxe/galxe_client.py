@@ -69,6 +69,45 @@ class GalxeClient():
         update_rank(address=self.wallet.address, rank=rank)
         return True
 
+    async def delete_social_account(self, social: str):
+        json_data = {
+            'operationName': 'DeleteSocialAccount',
+            'variables': {
+                'input': {
+                    'address': f'EVM:{self.client.account.address}',
+                    'type': f'{social.upper()}',
+                },
+            },
+            'query': 'mutation DeleteSocialAccount($input: DeleteSocialAccountInput!) {\n  deleteSocialAccount(input: $input) {\n    code\n    message\n    __typename\n  }\n}',
+        }
+        return await self.request(json_data=json_data)
+
+    async def connect_twitter(self, tweet_url: str):
+        json_data = {
+            'operationName': 'checkTwitterAccount',
+            'variables': {
+                'input': {
+                    'address': f'EVM:{self.client.account.address}',
+                    'tweetURL': f'{tweet_url}',
+                },
+            },
+            'query': 'mutation checkTwitterAccount($input: VerifyTwitterAccountInput!) {\n  checkTwitterAccount(input: $input) {\n    address\n    twitterUserID\n    twitterUserName\n    __typename\n  }\n}',
+        }
+
+        await self.request(json_data=json_data)
+        json_data = {
+            'operationName': 'VerifyTwitterAccount',
+            'variables': {
+                'input': {
+                    'address': f'EVM:{self.client.account.address}',
+                    'tweetURL': f'{tweet_url}',
+                },
+            },
+            'query': 'mutation VerifyTwitterAccount($input: VerifyTwitterAccountInput!) {\n  verifyTwitterAccount(input: $input) {\n    address\n    twitterUserID\n    twitterUserName\n    __typename\n  }\n}',
+        }
+        return await self.request(json_data=json_data)
+
+
     async def get_points_and_rank(self, campaign_id: int):
         json_data = {
             'operationName': 'SpaceLoyaltyPoints',
@@ -178,6 +217,64 @@ class GalxeClient():
         'query': 'query BasicUserInfo($address: String!) {\n  addressInfo(address: $address) {\n    id\n    username\n    avatar\n    address\n    evmAddressSecondary {\n      address\n      __typename\n    }\n    userLevel {\n      level {\n        name\n        logo\n        minExp\n        maxExp\n        value\n        __typename\n      }\n      exp\n      gold\n      ggRecall\n      __typename\n    }\n    ggInviteeInfo {\n      questCount\n      ggCount\n      __typename\n    }\n    ggInviteCode\n    ggInviter {\n      id\n      username\n      __typename\n    }\n    isBot\n    hasEmail\n    solanaAddress\n    aptosAddress\n    seiAddress\n    injectiveAddress\n    flowAddress\n    starknetAddress\n    bitcoinAddress\n    suiAddress\n    stacksAddress\n    azeroAddress\n    archwayAddress\n    bitcoinSignetAddress\n    xrplAddress\n    algorandAddress\n    tonAddress\n    kadenaAddress\n    hasEvmAddress\n    hasSolanaAddress\n    hasAptosAddress\n    hasInjectiveAddress\n    hasFlowAddress\n    hasStarknetAddress\n    hasBitcoinAddress\n    hasSuiAddress\n    hasStacksAddress\n    hasAzeroAddress\n    hasArchwayAddress\n    hasBitcoinSignetAddress\n    hasXrplAddress\n    hasAlgorandAddress\n    hasTonAddress\n    hasKadenaAddress\n    hasTwitter\n    hasGithub\n    hasDiscord\n    hasTelegram\n    hasWorldcoin\n    displayEmail\n    displayTwitter\n    displayGithub\n    displayDiscord\n    displayTelegram\n    displayWorldcoin\n    displayNamePref\n    email\n    twitterUserID\n    twitterUserName\n    githubUserID\n    githubUserName\n    discordUserID\n    discordUserName\n    telegramUserID\n    telegramUserName\n    worldcoinID\n    enableEmailSubs\n    subscriptions\n    isWhitelisted\n    isInvited\n    isAdmin\n    accessToken\n    humanityType\n    __typename\n  }\n}',
         }
         return await self.request(json_data=json_data)
+
+    async def add_type(self, cred_id, campaign_id):
+        captcha = await self.get_captcha('AddTypedCredentialItems')
+        captcha.update({'encryptedData': ''})
+        json_data = {
+            'operationName': 'AddTypedCredentialItems',
+            'variables': {
+                'input': {
+                    'credId': f'{cred_id}',
+                    'campaignId': f'{campaign_id}',
+                    'operation': 'APPEND',
+                    'items': [
+                        f'EVM:{self.client.account.address}',
+                    ],
+                    'captcha': captcha,
+                },
+            },
+            'query': 'mutation AddTypedCredentialItems($input: MutateTypedCredItemInput!) {\n  typedCredentialItems(input: $input) {\n    id\n    __typename\n  }\n}',
+        }
+        await self.request(json_data=json_data)
+
+    async def sync_twitter_quest(self, cred_id, campaign_id):
+        await self.add_type(cred_id=cred_id, campaign_id=campaign_id)
+        json_data = {
+            'operationName': 'TwitterOauth2Status',
+            'variables': {},
+            'query': 'query TwitterOauth2Status {\n  twitterOauth2Status {\n    oauthRateLimited\n    __typename\n  }\n}',
+        }
+        await self.request(json_data=json_data)
+        json_data = {
+            'operationName': 'OauthAddress',
+            'variables': {
+                'address': f'EVM:{self.client.account.address}',
+            },
+            'query': 'query OauthAddress($address: String!) {\n  addressInfo(address: $address) {\n    id\n    isVerifiedTwitterOauth2\n    isVerifiedDiscordOauth2\n    __typename\n  }\n}',
+        }
+        await self.request(json_data=json_data)
+
+        captcha = await self.get_captcha('SyncCredentialValue')
+        captcha.update({'encryptedData': ''})
+        json_data = {
+            'operationName': 'SyncCredentialValue',
+            'variables': {
+                'input': {
+                    'syncOptions': {
+                        'credId': f'{cred_id}',
+                        'address': f'EVM:{self.client.account.address}',
+                        'twitter': {
+                            'campaignID': f'{campaign_id}',
+                            'captcha': captcha
+                        },
+                    },
+                },
+            },
+            'query': 'mutation SyncCredentialValue($input: SyncCredentialValueInput!) {\n  syncCredentialValue(input: $input) {\n    value {\n      address\n      spaceUsers {\n        follow\n        points\n        participations\n        __typename\n      }\n      campaignReferral {\n        count\n        __typename\n      }\n      galxePassport {\n        eligible\n        lastSelfieTimestamp\n        __typename\n      }\n      spacePoint {\n        points\n        __typename\n      }\n      spaceParticipation {\n        participations\n        __typename\n      }\n      gitcoinPassport {\n        score\n        lastScoreTimestamp\n        __typename\n      }\n      walletBalance {\n        balance\n        __typename\n      }\n      multiDimension {\n        value\n        __typename\n      }\n      allow\n      survey {\n        answers\n        __typename\n      }\n      quiz {\n        allow\n        correct\n        __typename\n      }\n      prediction {\n        isCorrect\n        __typename\n      }\n      spaceFollower {\n        follow\n        __typename\n      }\n      __typename\n    }\n    message\n    __typename\n  }\n}',
+        }
+        data = await self.request(json_data=json_data)
+        return data['data']['syncCredentialValue']['value']['allow']
 
     async def sync_quest(self, cred_id: str):
         if not self.bearer_token:

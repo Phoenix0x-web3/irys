@@ -87,7 +87,7 @@ class CaptchaHandler:
                     "type": "GeeTestTask",
                     "websiteURL": f"{websiteURL}",
                     "gt": captcha_id,
-                    # "challenge": challenge,
+                    "challenge": challenge,
                     "version": 4,
                     "userAgent": windows_user_agent
                 }
