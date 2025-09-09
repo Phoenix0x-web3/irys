@@ -28,7 +28,7 @@ check_git_updates: true
 # the log level for the application. Options: DEBUG, INFO, WARNING, ERROR
 log_level : INFO
 
-# Delay before running the same wallet again after it has completed all actions (1 - 2 hrs default)
+# Delay before running the new cicle of wallets after it has completed all actions (1 - 2 hrs default)
 random_pause_wallet_after_completion:
   min: 3600
   max: 7200
