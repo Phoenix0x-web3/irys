@@ -80,8 +80,6 @@ async def activity(action: int):
     if action == 3 and wallets:
         await execute(wallets, complete_galxe_quests)
 
-    await asyncio.sleep(60)
-
 async def start_main_action(wallet):
     now = datetime.now()
     if wallet.next_game_action_time >= now and wallet.completed != 0:
