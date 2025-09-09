@@ -185,7 +185,7 @@ class Irys(Base):
                             logger.debug(f"Wrong with claim {e}")
 
         await galxe_client.update_points_and_rank(campaign_id=58934)
-        logger.info(f"{self.wallet} all claim or don't eligible to any points in Galxe")
+        logger.info(f"{self.wallet} have {self.wallet.points} points and rank {self.wallet.rank} in Galxe")
 
 
     @async_retry()
