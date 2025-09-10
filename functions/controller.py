@@ -26,7 +26,7 @@ class Controller:
 
     async def complete_galxe_quests(self):
         functions = [
-            self.irys_client.complete_twitter_galxe_quests,
+            # self.irys_client.complete_twitter_galxe_quests,
             self.irys_client.complete_galxe_quests,
         ]
         random.shuffle(functions)

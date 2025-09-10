@@ -478,9 +478,9 @@ class Networks:
 
     Gravity = Network(
             name='gravity',
-            rpc="https://rpc.gravity.xyz",
+            rpc=RPC_MAP['gravity'],            
             chain_id=1625,
-            tx_type=2,
+            tx_type=0,
             coin_symbol='G',
             decimals=18,
             explorer='',

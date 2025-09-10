@@ -9,6 +9,7 @@ from utils.db_api.models import Wallet
 from utils.galxe.galxe_client import GalxeClient
 from utils.browser import Browser
 from utils.twitter.twitter_client import TwitterClient
+from utils.resource_manager import ResourceManager
 from utils.retry import async_retry
 from data.settings import Settings
 from libs.base import Base
@@ -25,9 +26,7 @@ class Irys(Base):
         playing_game = 0
         errors_game = 0
         while True:
-            if errors_game > 3:
-                return False
-            if playing_game >= random_playing_games:
+            if playing_game >= random_playing_games or errors_game >= 3:
                 return True
             game = await self.complete_game()
             if game:
@@ -40,8 +39,7 @@ class Irys(Base):
                 errors_game += 1
                 continue
 
-    async def get_tweet_url(self, id: str):
-        twitter_client = TwitterClient(user=self.wallet)
+    async def get_tweet_url(self, id: str, twitter_client):
         text = f"Verifying my Twitter account for my #GalxeID gid:{id} @Galxe "
         tweet = await twitter_client.post_tweet(text=text)
         if tweet:
@@ -65,7 +63,7 @@ class Irys(Base):
             await asyncio.sleep(5)
         if not twitter_connect_id:
             id = session['data']['addressInfo']['id']
-            tweet_url = await self.get_tweet_url(id=id)
+            tweet_url = await self.get_tweet_url(id=id, twitter_client=twitter_client)
             if not tweet_url:
                 logger.error(f"{self.wallet} can't post tweets")
                 return False
@@ -131,7 +129,7 @@ class Irys(Base):
 
     async def complete_galxe_quests(self,):
         completed_games = self.wallet.completed_games
-        campaign_ids = ["GCFtLtfrJH", "GCLjLtf7zj", "GCY3gt6MQE"]
+        campaign_ids = ["GCFtLtfrJH", "GCLjLtf7zj"] 
         galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
         random.shuffle(campaign_ids)
         for campaign_id in campaign_ids:
@@ -242,7 +240,6 @@ class Irys(Base):
                     logger.warning(
                         f"{self.wallet} proxy error limit exceeded ({self.proxy_errors}/{max_proxy_errors}), marking as BAD"
                     )
-                    from utils.resource_manager import ResourceManager
 
                     resource_manager = ResourceManager()
                     await resource_manager.mark_proxy_as_bad(self.wallet.address)
@@ -272,6 +269,9 @@ class Irys(Base):
         if request.status_code == 200 and data['success']:
             logger.success(f"{self.wallet} success play game with {wpm} wpm")
             return add_count_game(address=self.wallet.address)
+        else:
+            logger.warning(f"{self.wallet} wrong with play game. Try again")
+            logger.debug(f"{self.wallet} play status code {request.stattus_code} data: {data}")
         return False
 
 

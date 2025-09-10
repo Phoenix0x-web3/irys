@@ -95,7 +95,7 @@ async def start_main_action(wallet):
     
     if c:
         now = datetime.now()
-        if 100 >= random.randint(1, 100):
+        if 20 >= random.randint(1, 100):
             random_delay = random.randint(Settings().random_pause_wallet_long_delay_min, Settings().random_pause_wallet_long_delay_max)
             next_time = now + timedelta(seconds=random_delay)
             await controller.complete_galxe_quests()
