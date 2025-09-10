@@ -121,12 +121,12 @@ class Irys(Base):
                             logger.warning(f"{self.wallet} can't sync quest for {tier['name']} on Galxe. Wait update")
                             await asyncio.sleep(60)
                             continue
-                else:
-                    try:
-                        await galxe_client.claim_points(campaign_id=campaign_id)
-                    except Exception as e:
-                        logger.info(f"{self.wallet} already claimed points for {tier['name']} quest")
-                        logger.debug(f"Wrong with claim {e}")
+                # else:
+                #     try:
+                #         await galxe_client.claim_points(campaign_id=campaign_id)
+                #     except Exception as e:
+                #         logger.info(f"{self.wallet} already claimed points for {tier['name']} quest")
+                #         logger.debug(f"Wrong with claim {e}")
 
     async def complete_galxe_quests(self,):
         completed_games = self.wallet.completed_games
@@ -272,7 +272,7 @@ class Irys(Base):
             return add_count_game(address=self.wallet.address)
         else:
             logger.warning(f"{self.wallet} wrong with play game. Try again")
-            logger.debug(f"{self.wallet} play status code {request.stattus_code} data: {data}")
+            logger.debug(f"{self.wallet} play status code {request.status_code} data: {data}")
         return False
 
 

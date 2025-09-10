@@ -75,14 +75,14 @@ async def activity(action: int):
         await execute(wallets, start_main_action, random.randint(Settings().random_pause_wallet_after_completion_min, Settings().random_pause_wallet_after_completion_max))
 
     if action == 2 and wallets:
-        await execute(wallets, complete_games)
+        await execute(wallets, complete_games,random.randint(Settings().random_pause_wallet_after_completion_min, Settings().random_pause_wallet_after_completion_max))
 
     if action == 3 and wallets:
         await execute(wallets, complete_galxe_quests)
 
 async def start_main_action(wallet):
     now = datetime.now()
-    if wallet.next_game_action_time >= now and wallet.completed != 0:
+    if wallet.next_game_action_time >= now:
         return
     
     await random_sleep_before_start(wallet=wallet)
@@ -119,7 +119,10 @@ async def complete_galxe_quests(wallet):
     await controller.complete_galxe_quests()
     
 async def complete_games(wallet):
-    
+    now = datetime.now()
+    if wallet.next_game_action_time >= now:
+        return
+
     await random_sleep_before_start(wallet=wallet)
     
     client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
