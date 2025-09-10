@@ -75,7 +75,7 @@ class Irys(Base):
     async def complete_twitter_galxe_quests(self):
         galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
         twitter_client = TwitterClient(user=self.wallet)
-        campaign_ids = ["GCVu3tf3qN", "GCmW3tfFAy"]
+        campaign_ids = ["GC17CtmBrm"]
         random.shuffle(campaign_ids)
         for campaign_id in campaign_ids:
             info = await galxe_client.get_quest_cred_list(campaign_id=campaign_id)
@@ -109,12 +109,13 @@ class Irys(Base):
                         sync = await galxe_client.sync_twitter_quest(cred_id=tier['cred_id'], campaign_id=campaign_id)
                         if sync:
                             logger.success(f"{self.wallet} success sync quest for {tier['name']} on Galxe")
-                            await asyncio.sleep(15)
-                            try:
-                                await galxe_client.claim_points(campaign_id=campaign_id)
-                            except Exception:
-                                await asyncio.sleep(60)
-                                continue
+                            # Keep that for next quest
+                            # await asyncio.sleep(15)
+                            # try:
+                            #     await galxe_client.claim_points(campaign_id=campaign_id)
+                            # except Exception:
+                            #     await asyncio.sleep(60)
+                            #     continue
                             break 
                         else:
                             logger.warning(f"{self.wallet} can't sync quest for {tier['name']} on Galxe. Wait update")
