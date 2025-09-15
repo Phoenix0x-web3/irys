@@ -14,6 +14,7 @@ from utils.retry import async_retry
 from data.settings import Settings
 from libs.base import Base
 from libs.eth_async.client import Client
+from libs.eth_async.data.models import Networks , Network
 
 class Irys(Base):
     def __init__(self, client: Client, wallet: Wallet):
@@ -168,7 +169,8 @@ class Irys(Base):
                                 logger.success(f"{self.wallet} success sync quest for {tier['plays_required']} on Galxe")
                                 await asyncio.sleep(15)
                                 try:
-                                    await galxe_client.claim_points(campaign_id=campaign_id)
+                                    if await self.check_available_claim():
+                                        await galxe_client.claim_points(campaign_id=campaign_id)
                                 except Exception:
                                     await asyncio.sleep(60)
                                     continue
@@ -178,7 +180,8 @@ class Irys(Base):
                                 continue
                     else:
                         try:
-                            await galxe_client.claim_points(campaign_id=campaign_id)
+                            if await self.check_available_claim():
+                                await galxe_client.claim_points(campaign_id=campaign_id)
                         except Exception as e:
                             logger.info(f"{self.wallet} already claimed points for {tier['name']} quest")
                             logger.debug(f"Wrong with claim {e}")
@@ -361,3 +364,17 @@ class Irys(Base):
         
         # Step 7: Return first 32 characters
         return sha256_hash[:32]
+
+    async def check_available_claim(self):
+        gravity_balance = await self.client.wallet.balance()
+        if gravity_balance.Ether > 2.5:
+            return True
+        network_values = [value for key, value in Networks.__dict__.items() if isinstance(value, Network)]
+        random.shuffle(network_values)
+        for network in network_values:
+            if network.name in Settings().network_for_bridge:
+                client = Client(private_key=self.client.account._private_key.hex(), network=network, proxy=self.client.proxy)
+                balance = await client.wallet.balance()
+                if balance.Ether > Settings().random_eth_for_bridge_max:
+                    return True
+        return False
