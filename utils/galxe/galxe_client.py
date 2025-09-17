@@ -55,11 +55,15 @@ class GalxeClient():
         random.shuffle(network_values)
         for network in network_values:
             if network.name in Settings().network_for_bridge:
-                client = Client(private_key=self.client.account._private_key.hex(), network=network, proxy=self.client.proxy)
-                balance = await client.wallet.balance()
-                if balance.Ether > Settings().random_eth_for_bridge_max:
-                    base_client = Base(client=client, wallet=self.wallet)
-                    return base_client
+                try:
+                    client = Client(private_key=self.client.account._private_key.hex(), network=network, proxy=self.client.proxy)
+                    balance = await client.wallet.balance()
+                    if balance.Ether > Settings().random_eth_for_bridge_max:
+                        base_client = Base(client=client, wallet=self.wallet)
+                        return base_client
+                except Exception as e:
+                    logger.warning(f"{self.wallet} can't check network {network.name} error: {e}")
+                    continue
 
     async def update_points_and_rank(self, campaign_id: int):
         data = await self.get_points_and_rank(campaign_id=campaign_id)
@@ -155,6 +159,8 @@ class GalxeClient():
         info = info['data']['campaign']
         chain = info['chain']
         params = self._get_claim_params(info)
+        if not params:
+            return False
         if params['pointMintAmount'] > 0 and params['mintCount'] > 0:
             params['pointMintAmount'] = 0
         captcha = await self.get_captcha('PrepareParticipate')
@@ -215,6 +221,35 @@ class GalxeClient():
             'address': f'EVM:{self.wallet.address}',
         },
         'query': 'query BasicUserInfo($address: String!) {\n  addressInfo(address: $address) {\n    id\n    username\n    avatar\n    address\n    evmAddressSecondary {\n      address\n      __typename\n    }\n    userLevel {\n      level {\n        name\n        logo\n        minExp\n        maxExp\n        value\n        __typename\n      }\n      exp\n      gold\n      ggRecall\n      __typename\n    }\n    ggInviteeInfo {\n      questCount\n      ggCount\n      __typename\n    }\n    ggInviteCode\n    ggInviter {\n      id\n      username\n      __typename\n    }\n    isBot\n    hasEmail\n    solanaAddress\n    aptosAddress\n    seiAddress\n    injectiveAddress\n    flowAddress\n    starknetAddress\n    bitcoinAddress\n    suiAddress\n    stacksAddress\n    azeroAddress\n    archwayAddress\n    bitcoinSignetAddress\n    xrplAddress\n    algorandAddress\n    tonAddress\n    kadenaAddress\n    hasEvmAddress\n    hasSolanaAddress\n    hasAptosAddress\n    hasInjectiveAddress\n    hasFlowAddress\n    hasStarknetAddress\n    hasBitcoinAddress\n    hasSuiAddress\n    hasStacksAddress\n    hasAzeroAddress\n    hasArchwayAddress\n    hasBitcoinSignetAddress\n    hasXrplAddress\n    hasAlgorandAddress\n    hasTonAddress\n    hasKadenaAddress\n    hasTwitter\n    hasGithub\n    hasDiscord\n    hasTelegram\n    hasWorldcoin\n    displayEmail\n    displayTwitter\n    displayGithub\n    displayDiscord\n    displayTelegram\n    displayWorldcoin\n    displayNamePref\n    email\n    twitterUserID\n    twitterUserName\n    githubUserID\n    githubUserName\n    discordUserID\n    discordUserName\n    telegramUserID\n    telegramUserName\n    worldcoinID\n    enableEmailSubs\n    subscriptions\n    isWhitelisted\n    isInvited\n    isAdmin\n    accessToken\n    humanityType\n    __typename\n  }\n}',
+        }
+        return await self.request(json_data=json_data)
+
+    async def read_quiz(self, cred_id):
+        json_data = {
+            'operationName': 'readQuiz',
+            'variables': {
+                'id': f'{cred_id}',
+            },
+            'query': 'query readQuiz($id: ID!) {\n  credential(id: $id) {\n    ...CredQuizFrag\n    __typename\n  }\n}\n\nfragment CredQuizFrag on Cred {\n  metadata {\n    quiz {\n      material\n      quizzes {\n        title\n        type\n        alvaHints\n        items {\n          value\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n  __typename\n}',
+        }
+        return await self.request(json_data=json_data)
+
+    async def sync_quiz(self, cred_id, answers:list):
+        await self.read_quiz(cred_id=cred_id)
+        json_data = {
+            'operationName': 'SyncCredentialValue',
+            'variables': {
+                'input': {
+                    'syncOptions': {
+                        'credId': f'{cred_id}',
+                        'address': f'EVM:{self.client.account.address}',
+                        'quiz': {
+                            'answers': answers
+                        },
+                    },
+                },
+            },
+            'query': 'mutation SyncCredentialValue($input: SyncCredentialValueInput!) {\n  syncCredentialValue(input: $input) {\n    value {\n      address\n      spaceUsers {\n        follow\n        points\n        participations\n        __typename\n      }\n      campaignReferral {\n        count\n        __typename\n      }\n      galxePassport {\n        eligible\n        lastSelfieTimestamp\n        __typename\n      }\n      spacePoint {\n        points\n        __typename\n      }\n      spaceParticipation {\n        participations\n        __typename\n      }\n      gitcoinPassport {\n        score\n        lastScoreTimestamp\n        __typename\n      }\n      walletBalance {\n        balance\n        __typename\n      }\n      multiDimension {\n        value\n        __typename\n      }\n      allow\n      survey {\n        answers\n        __typename\n      }\n      quiz {\n        allow\n        correct\n        __typename\n      }\n      prediction {\n        isCorrect\n        __typename\n      }\n      spaceFollower {\n        follow\n        __typename\n      }\n      __typename\n    }\n    message\n    __typename\n  }\n}',
         }
         return await self.request(json_data=json_data)
 
@@ -336,7 +371,8 @@ class GalxeClient():
         mint_amount = 0 if wl_info['maxCount'] == -1 else wl_info['maxCount'] - wl_info['usedCount']
         chain = 'GRAVITY_ALPHA' if point_mint_amount > 0 else campaign['chain']
         if point_mint_amount <= 0 and mint_amount <= 0:
-            raise Exception('Nothing to claim')
+            logger.debug(f"{self.wallet} nothing to claim")
+            return False
         mint_log = []
         mint_log = ' and '.join(mint_log)
         return {
