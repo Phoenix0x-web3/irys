@@ -9,6 +9,7 @@ from utils.db_api.models import Wallet
 from utils.db_api.wallet_api import update_points, update_rank
 from utils.browser import Browser
 from utils.captcha.captcha_handler import CaptchaHandler
+from utils.retry import async_retry
 from libs.eth_async.client import Client
 from libs.eth_async.data.models import Networks, TokenAmount, Network
 from libs.base import Base
@@ -43,6 +44,7 @@ class GalxeClient():
             "requestid": str(uuid.uuid4()) 
         })
 
+    @async_retry()
     async def request(self, json_data):
         self.update_headers()
         response = await self.browser.post(url=self.BASE_LINK, json=json_data, headers=self.headers)
@@ -69,9 +71,7 @@ class GalxeClient():
         data = await self.get_points_and_rank(campaign_id=campaign_id)
         points = data['data']['space']['addressLoyaltyPoints']['points']
         rank = data['data']['space']['addressLoyaltyPoints']['rank']
-        update_points(address=self.wallet.address, points=points)
-        update_rank(address=self.wallet.address, rank=rank)
-        return True
+        return points,rank
 
     async def delete_social_account(self, social: str):
         json_data = {

@@ -4,6 +4,7 @@ from loguru import logger
 
 from data.settings import Settings
 from utils.db_api.models import Wallet
+from utils.db_api.wallet_api import update_points, update_rank
 from utils.galxe.galxe_client import GalxeClient
 from utils.twitter.twitter_client import TwitterClient
 from libs.eth_async.client import Client
@@ -16,8 +17,47 @@ class Quests(Irys):
         self.proxy_errors = 0
 
     async def update_points(self, galxe_client):
-        await galxe_client.update_points_and_rank(campaign_id=58934)
+        points, rank = await galxe_client.update_points_and_rank(campaign_id=58934)
+        update_points(address=self.wallet.address, points=points)
+        update_rank(address=self.wallet.address, rank=rank)
         logger.info(f"{self.wallet} have {self.wallet.points} points and rank {self.wallet.rank} in Galxe")
+
+    async def complete_irys_other_games_quests(self, galxe_client: GalxeClient):
+        campaign_ids = ["GCAH4t8rXq", "GCLV4t8ikW"]
+        for campaign_id in campaign_ids:
+            info = await galxe_client.get_quest_cred_list(campaign_id=campaign_id)
+            reward_configs = info['data']['campaign']['taskConfig']['rewardConfigs']
+            reward_tiers = []
+            for config in reward_configs:
+                condition = config['conditions'][0]
+                cred = condition['cred']
+                cred_id = int(cred['id'])
+                exp_reward = int(config['rewards'][0]['arithmeticFormula'])
+                eligible = config['eligible']
+                
+                reward_tiers.append({
+                    'cred_id': cred_id,
+                    'exp_reward': exp_reward,
+                    'eligible': eligible,
+                    'name': cred['name'],
+                })
+
+            logger.debug(reward_tiers)
+
+            for tier in reward_tiers:
+                if not tier['eligible']:
+                    for _ in range(2):
+                        sync = await galxe_client.sync_quest(cred_id=tier['cred_id'])
+                        if sync:
+                            logger.success(f"{self.wallet} success sync quest for {tier['name']} on Galxe")
+                            await asyncio.sleep(15)
+                            break
+                        else:
+                            logger.warning(f"{self.wallet} can't sync quest for {tier['name']} on Galxe. Wait update")
+                            continue
+
+            if await self.check_available_claim():
+                await galxe_client.claim_points(campaign_id=campaign_id)
 
     async def complete_irysverse_quiz(self, galxe_client: GalxeClient):
         campaign_ids = ["GCVs3t6iHA"]
@@ -253,4 +293,5 @@ class Quests(Irys):
                 except Exception as e:
                     logger.warning(f"{self.wallet} can't check network {network.name} error: {e}")
                     continue
+        logger.warning(f"{self.wallet} account without funds for claim Galxe Points")
         return False

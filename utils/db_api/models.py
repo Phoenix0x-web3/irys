@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import datetime,timedelta
 
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column
@@ -25,6 +25,9 @@ class Wallet(Base):
     rank: Mapped[int] = mapped_column(nullable=True, default=None)
     completed: Mapped[bool] = mapped_column(default=False)
     next_game_action_time: Mapped[datetime] = mapped_column(default=datetime.now)
+    last_faucet_claim: Mapped[datetime | None] = mapped_column(
+            default=None
+        )
 
 
     def __repr__(self):
