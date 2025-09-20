@@ -11,13 +11,16 @@ from utils.db_import_export_sync import Import, Export, Sync
 from utils.output import show_channel_info
 from utils.git_version import check_for_updates
 from data.constants import PROJECT_NAME
+from utils.db_api import migrate
 
 console = Console()
  
 PROJECT_ACTIONS =   [
                     "1. Run All Activities",
                     "2. Start Complete SpriteType Games",
-                    "3. Start Complete Galxe Quests",
+                    "3. Start Complete Snake Games",
+                    "4. Start Complete Galxe Quests",
+                    "5. Start Onchain Actions",
                     "Back"
                     ]
 
@@ -86,8 +89,14 @@ async def choose_action():
     elif action == "2. Start Complete SpriteType Games":
         await activity(action=2)
 
-    elif action == "3. Start Complete Galxe Quests":
+    elif action == "3. Start Complete Snake Games":
         await activity(action=3)
+
+    elif action == "4. Start Complete Galxe Quests":
+        await activity(action=4)
+
+    elif action == "5. Start Onchain Actions":
+        await activity(action=5)
 
     elif action == "1. Reset files Folder":
         console.print("This action will delete the files folder and reset it.") 

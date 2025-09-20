@@ -487,6 +487,17 @@ class Networks:
             api=None
         )
 
+    Irys = Network(
+            name='irys',
+            rpc=RPC_MAP['irys'],            
+            chain_id=1270,
+            tx_type=0,
+            coin_symbol='IRYS',
+            decimals=18,
+            explorer='',
+            api=None
+        )
+
 
 
 class RawContract(AutoRepr):

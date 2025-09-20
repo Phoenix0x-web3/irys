@@ -125,5 +125,13 @@ def get_wallets_with_bad_proxy() -> list:
 def get_wallets_with_bad_twitter() -> list:
     return db.all(Wallet, Wallet.twitter_status == "BAD")
 
+def last_faucet_claim(address:str, last_faucet_claim) -> bool:
+    wallet = db.one(Wallet, Wallet.address == address)
+    if not wallet:
+        return False
+    wallet.last_faucet_claim = last_faucet_claim
+    db.commit()
+    return True
+
 db = DB(f'sqlite:///{WALLETS_DB}', echo=False, pool_recycle=3600, connect_args={'check_same_thread': False})
 db.create_tables(Base)
