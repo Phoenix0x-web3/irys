@@ -72,7 +72,7 @@ async def activity(action: int):
 
     logger.info(f"Found {len(wallets)} wallets for action")
     if action == 1 and wallets:
-        await execute(wallets, start_main_action, random.randint(Settings().random_pause_wallet_after_completion_sprite_types_game_min, Settings().random_pause_wallet_after_all_completion_max))
+        await execute(wallets, start_main_action, random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max))
 
     if action == 2 and wallets:
         await execute(wallets, complete_sprite_type_games,random.randint(Settings().random_pause_wallet_after_completion_sprite_types_game_min, Settings().random_pause_wallet_after_completion_sprite_types_game_max))
