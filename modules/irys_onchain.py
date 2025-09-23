@@ -3,10 +3,12 @@ from loguru import logger
 from web3.types import TxParams
 
 from data.models import Contracts
+from data.settings import Settings
 from libs.eth_async.data.models import TokenAmount
 from utils.db_api.wallet_api import last_faucet_claim
 from utils.db_api.models import Wallet
 from utils.captcha.captcha_handler import CaptchaHandler
+from utils.retry import async_retry
 from libs.base import Base
 from libs.eth_async.client import Client
 
@@ -15,6 +17,42 @@ class IrysOnchain(Base):
         super().__init__(client, wallet)
         self.proxy_errors = 0
 
+    async def mint_irys(self):
+        balance_in_irys = await self.client.wallet.balance()
+        contract = await self.client.contracts.get(Contracts.IRYS_OMNIHUB_NFT)
+        balance = await self.check_nft_balance(contract=contract)
+        if balance and not Settings().multiple_mint:
+            logger.debug(f"{self.wallet} already have {balance} NFT and Multiple Mint Off")
+            return
+        if balance_in_irys.Ether < TokenAmount(amount=0.001).Ether:
+            logger.warning(f"{self.wallet} balance not enough for mint Irys x OmniHub NFT")
+            return
+        data = "0xa25ffea800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000"
+        mint_value = TokenAmount(amount=1000000000000000, wei=True)
+        tx_params = TxParams(to=contract.address, data=data, value=mint_value.Wei)
+
+        result = await self.execute_transaction(tx_params=tx_params, activity_type="Mint Irys x OmniHub NFT")
+
+        contract = await self.client.contracts.get(Contracts.IRYS_WEEP_NFT)
+        clear_address = str(self.client.account.address)[2:].lower()
+        data = f"0x57bc3d78000000000000000000000000{clear_address}00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        tx_params = TxParams(to=contract.address, data=data)
+
+        try:
+            estimate_gas = await self.client.transactions.auto_add_params(tx_params=tx_params)
+            logger.debug(estimate_gas)
+        except Exception:
+            logger.debug(f"{self.wallet} have > 20 Irys Weep NFT.")
+            return True
+        result = await self.execute_transaction(tx_params=tx_params, activity_type="Mint Irys Weep NFT")
+
+        if result.success:
+            return result.tx_hash
+        else:
+            raise Exception(f"Error Mint Irys x Weep NFT: {result.error_message}")
+
+
+    @async_retry()
     async def irys_faucet(self):
         captcha_handler = CaptchaHandler(wallet=self.wallet)
         token = await captcha_handler.cloudflare_token(websiteURL="https://irys.xyz/faucet", websiterKey="0x4AAAAAAA6vnrvBCtS4FAl-")
@@ -32,6 +70,7 @@ class IrysOnchain(Base):
             logger.warning(f"{self.wallet} can't get Irys Token from Faucet message: {data['message']}")
         return data['success']
     
+    @async_retry()
     async def handle_balance(self):
         balance_in_platform = await self.check_platform_balance()
         logger.debug(balance_in_platform)

@@ -45,6 +45,14 @@ def update_twitter_token(address: str, updated_token: str | None) -> bool:
     db.commit()
     return True
 
+def update_next_action_time(address:str, next_action_time) -> bool:
+    wallet = db.one(Wallet, Wallet.address == address)
+    if not wallet:
+        return False
+    wallet.next_action_time = next_action_time
+    db.commit()
+    return True
+
 def update_next_game_time(address:str, next_game_action_time) -> bool:
     wallet = db.one(Wallet, Wallet.address == address)
     if not wallet:
@@ -111,11 +119,11 @@ def mark_proxy_as_bad(id: int) -> bool:
     db.commit()
     return True
 
-def mark_twitter_as_bad(id: int) -> bool:
+def mark_twitter_status(id: int, status: str) -> bool:
     wallet = db.one(Wallet, Wallet.id == id)
     if not wallet:
         return False
-    wallet.twitter_status = "BAD"
+    wallet.twitter_status = status
     db.commit()
     return True
 

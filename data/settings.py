@@ -24,19 +24,20 @@ class Settings(Singleton):
         self.random_pause_start_wallet_max = json_data.get("random_pause_start_wallet", {}).get("max")
         self.random_pause_between_actions_min = json_data.get("random_pause_between_actions", {}).get("min")
         self.random_pause_between_actions_max = json_data.get("random_pause_between_actions", {}).get("max")
-        self.random_pause_wallet_after_completion_min = json_data.get("random_pause_wallet_after_completion", {}).get('min')
-        self.random_pause_wallet_after_completion_max = json_data.get("random_pause_wallet_after_completion", {}).get('max')
-        self.random_pause_wallet_long_delay_min = json_data.get("random_pause_wallet_long_delay", {}).get('min')
-        self.random_pause_wallet_long_delay_max = json_data.get("random_pause_wallet_long_delay", {}).get('max')
+        self.random_pause_wallet_after_completion_sprite_types_game_min = json_data.get("random_pause_wallet_after_completion_sprite_types_game", {}).get('min')
+        self.random_pause_wallet_after_completion_sprite_types_game_max = json_data.get("random_pause_wallet_after_completion_sprite_types_game", {}).get('max')
+        self.random_pause_wallet_after_all_completion_min = json_data.get("random_pause_wallet_after_all_completion", {}).get('min')
+        self.random_pause_wallet_after_all_completion_max = json_data.get("random_pause_wallet_after_all_completion", {}).get('max')
         self.capmonster_api_key = json_data.get("capmonster_api_key", "")
         self.network_for_bridge = json_data.get("network_for_bridge", [])
         self.auto_replace_proxy = json_data.get("auto_replace_proxy ", True)
         self.random_eth_for_bridge_min = json_data.get("random_eth_for_bridge", {}).get('min')
         self.random_eth_for_bridge_max = json_data.get("random_eth_for_bridge", {}).get('max')
+        self.random_irys_games_min = json_data.get("random_irys_games", {}).get('min')
+        self.random_irys_games_max = json_data.get("random_irys_games", {}).get('max')
         
-        self.tg_bot_id = json_data.get("tg_bot_id", "")
-        self.tg_user_id = json_data.get("tg_user_id", "")
         self.retry = json_data.get("retry", 3)
+        self.multiple_mint = json_data.get("multiple_mint", False)
 
 
 # Configure the logger based on the settings

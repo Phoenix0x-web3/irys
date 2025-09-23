@@ -28,15 +28,17 @@ check_git_updates: true
 # the log level for the application. Options: DEBUG, INFO, WARNING, ERROR
 log_level : INFO
 
-# Delay before running the new cicle of wallets after it has completed all actions (1 - 2 hrs default)
-random_pause_wallet_after_completion:
+# Delay before running the new cicle of wallets after it has completed Sprite Types Game actions (1 - 2 hrs default)
+# This Setting only for 2 option "Start Complete SpriteTypes games"
+random_pause_wallet_after_completion_sprite_types_game:
   min: 3600
   max: 7200
 
-# Long Delay with 20% chance before running the same wallet again after it has completed all actions (4 - 8 hrs default)
-random_pause_wallet_long_delay:
-  min: 14400
-  max: 28800
+# Delay before running the new cicle of wallets after it has completed all actions(24-25 hrs default)
+# This Setting only for 1 option "Run all Activities"
+random_pause_wallet_after_all_completion:
+  min: 86400
+  max: 90000
 # Random pause between actions in seconds
 random_pause_between_actions:
   min: 30
@@ -53,9 +55,17 @@ auto_replace_proxy: True
 
 # Api Key from https://dash.capmonster.cloud/
 capmonster_api_key: ""
-#Network can use for bridge to Gravity, for Galxe quests. Available: ethereum, arbitrum, base, optimism, ink, mode, bsc, op_bnb, polygon, soneium, lisk, unichain, avalanche, zksync 
+#Network can use for bridge to Gravity, for Galxe quests. Available: ethereum, arbitrum, base, optimism, ink, mode, bsc, op_bnb, polygon, soneium, lisk, unichain, avalanche, zksync, linea
 network_for_bridge: [arbitrum, base, optimism]
 #Random diaposon for ETH bridge. (0.1$ - 0.5$ in ETH default)
 random_eth_for_bridge:
   min: 0.000025
   max: 0.0001
+
+#Irys Onchain
+#Multiple Mint. Minting more > 1 NFT to Wallet
+multiple_mint: False
+# Random daily play for https://play.irys.xyz/ games
+random_irys_games:
+  min: 1
+  max: 1

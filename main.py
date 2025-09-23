@@ -18,7 +18,7 @@ console = Console()
 PROJECT_ACTIONS =   [
                     "1. Run All Activities",
                     "2. Start Complete SpriteType Games",
-                    "3. Start Complete Snake Games",
+                    "3. Start Complete All Portals Games",
                     "4. Start Complete Galxe Quests",
                     "5. Start Onchain Actions",
                     "Back"
@@ -89,7 +89,7 @@ async def choose_action():
     elif action == "2. Start Complete SpriteType Games":
         await activity(action=2)
 
-    elif action == "3. Start Complete Snake Games":
+    elif action == "3. Start Complete All Portals Games":
         await activity(action=3)
 
     elif action == "4. Start Complete Galxe Quests":

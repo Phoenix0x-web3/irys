@@ -23,7 +23,8 @@ class Quests(Irys):
         logger.info(f"{self.wallet} have {self.wallet.points} points and rank {self.wallet.rank} in Galxe")
 
     async def complete_irys_other_games_quests(self, galxe_client: GalxeClient):
-        campaign_ids = ["GCAH4t8rXq", "GCLV4t8ikW"]
+        campaign_ids = ["GCtydt8Ewv","GCLV4t8ikW","GC9r4t8ajy","GCsd4t89L9","GCFE4t8HrF"]
+        random.shuffle(campaign_ids)
         for campaign_id in campaign_ids:
             info = await galxe_client.get_quest_cred_list(campaign_id=campaign_id)
             reward_configs = info['data']['campaign']['taskConfig']['rewardConfigs']
@@ -46,15 +47,12 @@ class Quests(Irys):
 
             for tier in reward_tiers:
                 if not tier['eligible']:
-                    for _ in range(2):
-                        sync = await galxe_client.sync_quest(cred_id=tier['cred_id'])
-                        if sync:
-                            logger.success(f"{self.wallet} success sync quest for {tier['name']} on Galxe")
-                            await asyncio.sleep(15)
-                            break
-                        else:
-                            logger.warning(f"{self.wallet} can't sync quest for {tier['name']} on Galxe. Wait update")
-                            continue
+                    sync = await galxe_client.sync_quest(cred_id=tier['cred_id'])
+                    if sync:
+                        logger.success(f"{self.wallet} success sync quest for {tier['name']} on Galxe")
+                        await asyncio.sleep(15)
+                    else:
+                        continue
 
             if await self.check_available_claim():
                 await galxe_client.claim_points(campaign_id=campaign_id)
@@ -252,7 +250,7 @@ class Quests(Irys):
 
     async def complete_twitter_task(self,twitter_client, galxe_client, follow:str):
         if self.wallet.twitter_status != "OK":
-            logger.warning(f"{self.wallet} twitter status is not OK")
+            logger.warning(f"{self.wallet} twitter status is {self.wallet.twitter_status}. Skip Twitter quests")
             return False
         if not self.wallet.twitter_token:
             logger.warning(f"{self.wallet} doesn't have twitter tokens for twitters action")

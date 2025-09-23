@@ -23,9 +23,9 @@ class Controller:
         self.quest_client = Quests(client=client,wallet=wallet)
         self.irys_onchain = IrysOnchain(client=Client(private_key=self.client.account._private_key.hex(), network=Networks.Irys, proxy=self.wallet.proxy), wallet=wallet)
 
-    async def complete_snake_games(self):
+    async def complete_portal_games(self):
         if await self.irys_onchain.handle_balance():
-            return await self.irys_client.handle_snake_game()
+            return await self.irys_client.handle_arcade_game()
 
     async def complete_spritetype_games(self):
         if self.wallet.completed_games and self.wallet.completed_games >= 1000:
@@ -35,7 +35,14 @@ class Controller:
 
     async def complete_onchain(self):
         if not self.wallet.last_faucet_claim or self.wallet.last_faucet_claim + timedelta(hours=24) < datetime.utcnow():
-            return await self.irys_onchain.irys_faucet()
+            await self.irys_onchain.irys_faucet()
+        functions = [
+            self.irys_onchain.mint_irys,
+        ]
+        random.shuffle(functions)
+        for func in functions:
+            await func()
+        return
 
     async def complete_galxe_quests(self):
         galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
@@ -48,7 +55,10 @@ class Controller:
         ]
         random.shuffle(functions)
         for func in functions:
-            await func(galxe_client)
+            try:
+                await func(galxe_client)
+            except Exception:
+                continue
         await self.quest_client.update_points(galxe_client)
         return
 

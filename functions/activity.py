@@ -8,7 +8,7 @@ from functions.controller import Controller
 from data.settings import Settings
 from utils.encryption import check_encrypt_param
 from utils.db_api.models import Wallet
-from utils.db_api.wallet_api import db, update_next_game_time
+from utils.db_api.wallet_api import db, update_next_game_time, update_next_action_time
 from libs.eth_async.client import Client
 from libs.eth_async.data.models import Networks
 
@@ -40,8 +40,8 @@ async def execute(wallets : List[Wallet], task_func, random_pause_wallet_after_c
             break
  
         # update dynamically the pause time
-        random_pause_wallet_after_completion = random.randint(Settings().random_pause_wallet_after_completion_min,
-                                                              Settings().random_pause_wallet_after_completion_max)
+        random_pause_wallet_after_completion = random.randint(60 * 1,
+                                                              60 * 2)
         
         next_run = datetime.now() + timedelta(seconds=random_pause_wallet_after_completion)
         logger.info(
@@ -72,13 +72,13 @@ async def activity(action: int):
 
     logger.info(f"Found {len(wallets)} wallets for action")
     if action == 1 and wallets:
-        await execute(wallets, start_main_action, random.randint(Settings().random_pause_wallet_after_completion_min, Settings().random_pause_wallet_after_completion_max))
+        await execute(wallets, start_main_action, random.randint(Settings().random_pause_wallet_after_completion_sprite_types_game_min, Settings().random_pause_wallet_after_all_completion_max))
 
     if action == 2 and wallets:
-        await execute(wallets, complete_sprite_type_games,random.randint(Settings().random_pause_wallet_after_completion_min, Settings().random_pause_wallet_after_completion_max))
+        await execute(wallets, complete_sprite_type_games,random.randint(Settings().random_pause_wallet_after_completion_sprite_types_game_min, Settings().random_pause_wallet_after_completion_sprite_types_game_max))
 
     if action == 3 and wallets:
-        await execute(wallets, complete_snake_games)
+        await execute(wallets, complete_portal_games)
 
     if action == 4 and wallets:
         await execute(wallets, complete_galxe_quests)
@@ -88,7 +88,7 @@ async def activity(action: int):
 
 async def start_main_action(wallet):
     now = datetime.now()
-    if wallet.next_game_action_time >= now:
+    if wallet.next_action_time and wallet.next_action_time >= now:
         return
     
     await random_sleep_before_start(wallet=wallet)
@@ -96,35 +96,56 @@ async def start_main_action(wallet):
     client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
 
     controller = Controller(client=client, wallet=wallet)
-
-    c = await controller.complete_spritetype_games()
     
-    if c:
-        now = datetime.now()
-        if 20 >= random.randint(1, 100):
-            random_delay = random.randint(Settings().random_pause_wallet_long_delay_min, Settings().random_pause_wallet_long_delay_max)
-            next_time = now + timedelta(seconds=random_delay)
-            await controller.complete_onchain()
-            await controller.complete_snake_games()
-            await controller.complete_galxe_quests()
-        else:
-            random_delay = random.randint(Settings().random_pause_wallet_after_completion_min, Settings().random_pause_wallet_after_completion_max)
-            next_time = now + timedelta(seconds=random_delay)
-        success_update = update_next_game_time(address=wallet.address, next_game_action_time=next_time)
-        if success_update:
-            logger.info(f"{wallet} Next action scheduled at {next_time}")
-        else:
-            logger.error(f"{wallet} Failed to update next_game_action_time")
+    functions = [
+        controller.complete_spritetype_games,
+        controller.complete_onchain,
+        controller.complete_portal_games,
+    ]
+    random.shuffle(functions)
+    for func in functions:
+        try:
+            await func()
+        except Exception:
+            continue
+    random_delay = random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max)
+    next_time = now + timedelta(seconds=random_delay)
+    success_update = update_next_action_time(address=wallet.address, next_action_time=next_time)
+    await controller.complete_galxe_quests()
+    if success_update:
+        logger.info(f"{wallet} Next action scheduled at {next_time}")
+    else:
+        logger.error(f"{wallet} Failed to update next_game_action_time")
 
-async def complete_onchain_actions(wallet):
-    
+async def complete_sprite_type_games(wallet):
+    now = datetime.now()
+    if wallet.next_game_action_time and wallet.next_game_action_time >= now:
+        return
+
     await random_sleep_before_start(wallet=wallet)
     
     client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
 
     controller = Controller(client=client, wallet=wallet)
 
-    await controller.complete_onchain()
+    await controller.complete_spritetype_games()
+    now = datetime.now()
+    random_delay = random.randint(Settings().random_pause_wallet_after_completion_sprite_types_game_min, Settings().random_pause_wallet_after_completion_sprite_types_game_max)
+    next_time = now + timedelta(seconds=random_delay)
+    success_update = update_next_game_time(address=wallet.address, next_game_action_time=next_time)
+    if success_update:
+        logger.info(f"{wallet} Next action scheduled at {next_time}")
+    else:
+        logger.error(f"{wallet} Failed to update next_game_action_time")
+
+async def complete_portal_games(wallet):
+    await random_sleep_before_start(wallet=wallet)
+    
+    client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
+
+    controller = Controller(client=client, wallet=wallet)
+
+    await controller.complete_portal_games()
 
 async def complete_galxe_quests(wallet):
     
@@ -136,42 +157,13 @@ async def complete_galxe_quests(wallet):
 
     await controller.complete_galxe_quests()
     
-async def complete_snake_games(wallet):
-    now = datetime.now()
-    if wallet.next_game_action_time >= now:
-        return
-
+    
+async def complete_onchain_actions(wallet):
+    
     await random_sleep_before_start(wallet=wallet)
     
     client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
 
     controller = Controller(client=client, wallet=wallet)
 
-    await controller.complete_snake_games()
-    
-async def complete_sprite_type_games(wallet):
-    now = datetime.now()
-    if wallet.next_game_action_time >= now:
-        return
-
-    await random_sleep_before_start(wallet=wallet)
-    
-    client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
-
-    controller = Controller(client=client, wallet=wallet)
-
-    c = await controller.complete_spritetype_games()
-    
-    if c:
-        now = datetime.now()
-        if 20 >= random.randint(1, 100):
-            random_delay = random.randint(Settings().random_pause_wallet_long_delay_min, Settings().random_pause_wallet_long_delay_max)
-            next_time = now + timedelta(seconds=random_delay)
-        else:
-            random_delay = random.randint(Settings().random_pause_wallet_after_completion_min, Settings().random_pause_wallet_after_completion_max)
-            next_time = now + timedelta(seconds=random_delay)
-        success_update = update_next_game_time(address=wallet.address, next_game_action_time=next_time)
-        if success_update:
-            logger.info(f"{wallet} Next action scheduled at {next_time}")
-        else:
-            logger.error(f"{wallet} Failed to update next_game_action_time")
+    await controller.complete_onchain()

@@ -19,42 +19,60 @@ class Irys(Base):
         self.proxy_errors = 0
 
 
-    async def handle_snake_game(self):
-        random_playing_games = random.randint(1,3)
-        logger.info(f"{self.wallet} will be play {random_playing_games} times in Snake Game in this hour")
-        playing_game = 0
-        errors_game = 0
-        while True:
-            if playing_game >= random_playing_games or errors_game >= 3:
-                return True
-            start_game = await self.start_snake_game()
-            if start_game:
-                errors_game = 0
-                playing_game += 1
+    async def handle_arcade_game(self):
+        arcade_games = ['snake', 'asteroids', 'hex-shooter', 'missile-command']
+        random_sleep_games = {
+            'snake': {'min': 60 * 4, 'max': 60 * 8},
+            'asteroids': {'min': 60 * 8, 'max': 60 * 15},
+            'hex-shooter': {'min': 60 * 10, 'max': 60 * 25},
+            'missile-command': {'min': 60 * 10, 'max': 60 * 25},
+        }
+        random_score_games = {
+            'snake': {'min': 300, 'max': 1_100},
+            'asteroids': {'min': 55_000, 'max': 600_000},
+            'hex-shooter': {'min': 25_000, 'max': 75_000},
+            'missile-command': {'min': 150_000, 'max': 1_800_000},
+        }
+        random.shuffle(arcade_games)
+        for game_type in arcade_games:
+            random_playing_games = random.randint(Settings().random_irys_games_min, Settings().random_irys_games_max)
+            logger.info(f"{self.wallet} will be play {random_playing_games} times in {game_type} Game in this hour")
+            playing_game = 0
+            errors_game = 0
+            while True:
+                if playing_game >= random_playing_games or errors_game >= 3:
+                    break
+                start_game = await self.start_arcade_game(game_type=game_type)
+                if start_game:
+                    errors_game = 0
+                    playing_game += 1
 
-                random_sleep = random.randint(60 * 4, 60 * 8)
-                score = random.randint(300, 1100)
-                logger.info(f"{self.wallet} play {random_sleep} seconds in snake game with score: {score}")
-                await asyncio.sleep(random_sleep)
-                await self.finish_snake_game(score=score, session_id=start_game['data']['sessionId'])
-
-                random_sleep = random.randint(Settings().random_pause_between_actions_min, Settings().random_pause_between_actions_max)
-                logger.info(f"{self.wallet} sleep {random_sleep} seconds before next game")
-                await asyncio.sleep(random_sleep)
-            else:
-                errors_game += 1
-                continue
+                    random_sleep = random.randint(random_sleep_games.get(game_type).get('min'), random_sleep_games.get(game_type).get('max'))
+                    score = random.randint(random_score_games.get(game_type).get('min'), random_score_games.get(game_type).get('max'))
+                    logger.info(f"{self.wallet} play ~{int(random_sleep/60)} minutes in {game_type} game with score: {score}")
+                    await asyncio.sleep(random_sleep)
+                    finish = await self.finish_game(score=score, session_id=start_game['data']['sessionId'], game_type=game_type)
+                    if not finish:
+                        errors_game += 1
+                        continue
+                    random_sleep = random.randint(Settings().random_pause_between_actions_min, Settings().random_pause_between_actions_max)
+                    logger.info(f"{self.wallet} sleep {random_sleep} seconds before next game")
+                    await asyncio.sleep(random_sleep)
+                else:
+                    errors_game += 1
+                    continue
+        return True
 
 
     @async_retry()
-    async def start_snake_game(self):
+    async def start_arcade_game(self, game_type: str):
         time_stamp = int(time.time() * 1000)
         message = f"I authorize payment of 0.001 IRYS to play a game on Irys Arcade.\n    \nPlayer: {self.wallet.address}\nAmount: 0.001 IRYS\nTimestamp: {time_stamp}\n\nThis signature confirms I own this wallet and authorize the payment."
         signature = await self.sign_message(text=message)
         headers = {
             'origin': 'https://play.irys.xyz',
             'priority': 'u=1, i',
-            'referer': 'https://play.irys.xyz/snake',
+            'referer': 'https://play.irys.xyz/',
             'sec-ch-ua-mobile': '?0',
         }
         json_data = {
@@ -64,7 +82,7 @@ class Irys(Base):
             'message': f'{message}',
             'timestamp': time_stamp,
             'sessionId': f'game_{time_stamp}_{self.generate_random_string()}',
-            'gameType': 'snake',
+            'gameType': f'{game_type}',
         }
         logger.debug(json_data)
         start_game = await self.browser.post(url="https://play.irys.xyz/api/game/start", headers=headers, json=json_data)
@@ -72,27 +90,27 @@ class Irys(Base):
             return False
         data = start_game.json()
         if start_game.status_code == 200 and data['success']:
-            logger.success(f"{self.wallet} success start play snake game")
+            logger.success(f"{self.wallet} success start play {game_type} game")
             return data
         else:
-            logger.warning(f"{self.wallet} wrong with play snake game. Try again")
+            logger.warning(f"{self.wallet} wrong with play {game_type} game. Try again")
             logger.debug(f"{self.wallet} play status code {start_game.status_code} data: {data}")
         return False
 
     @async_retry()
-    async def finish_snake_game(self, score:int, session_id:str):
+    async def finish_game(self, score:int, session_id:str, game_type:str):
         time_stamp = int(time.time() * 1000)
-        message = f"I completed a snake game on Irys Arcade.\n    \nPlayer: {self.wallet.address}\nGame: snake\nScore: {score}\nSession: {session_id}\nTimestamp: {time_stamp}\n\nThis signature confirms I own this wallet and completed this game."
+        message = f"I completed a {game_type} game on Irys Arcade.\n    \nPlayer: {self.wallet.address}\nGame: {game_type}\nScore: {score}\nSession: {session_id}\nTimestamp: {time_stamp}\n\nThis signature confirms I own this wallet and completed this game."
         signature = await self.sign_message(text=message)
         headers = {
             'origin': 'https://play.irys.xyz',
             'priority': 'u=1, i',
-            'referer': 'https://play.irys.xyz/snake',
+            'referer': 'https://play.irys.xyz/',
             'sec-ch-ua-mobile': '?0',
         }
         json_data = {
             'playerAddress': f'{self.wallet.address}',
-            'gameType': 'snake',
+            'gameType': f'{game_type}',
             'score': score,
             'signature': f'{signature}',
             'message': f'{message}',
@@ -105,10 +123,10 @@ class Irys(Base):
             return False
         data = start_game.json()
         if start_game.status_code == 200 and data['success']:
-            logger.success(f"{self.wallet} snake {data['message']}")
+            logger.success(f"{self.wallet} {game_type} {data['message']}")
             return data
         else:
-            logger.warning(f"{self.wallet} wrong with finish snake game. Try again")
+            logger.warning(f"{self.wallet} wrong with finish {game_type} game. Try again")
             logger.debug(f"{self.wallet} play status code {start_game.status_code} data: {data}")
         return False
 
@@ -215,6 +233,9 @@ class Irys(Base):
         if request.status_code == 200 and data['success']:
             logger.success(f"{self.wallet} success play game with {wpm} wpm")
             return add_count_game(address=self.wallet.address)
+        elif 'error' in data and "Hourly" in data['error']:
+            logger.warning(f"{self.wallet} already play in this hour more > 10 type games")
+            return True
         else:
             logger.warning(f"{self.wallet} wrong with play game. Try again")
             logger.debug(f"{self.wallet} play status code {request.status_code} data: {data}")

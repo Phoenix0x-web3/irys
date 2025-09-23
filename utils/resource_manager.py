@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional
 from loguru import logger
 
 from data import config
-from utils.db_api.wallet_api import replace_bad_proxy, replace_bad_twitter, mark_proxy_as_bad, mark_twitter_as_bad, get_wallets_with_bad_proxy, get_wallets_with_bad_twitter
+from utils.db_api.wallet_api import replace_bad_proxy, replace_bad_twitter, mark_proxy_as_bad, get_wallets_with_bad_proxy, get_wallets_with_bad_twitter
 
 
 class ResourceManager:
@@ -170,18 +170,6 @@ class ResourceManager:
             Success status
         """
         return mark_proxy_as_bad(id)
-
-    async def mark_twitter_as_bad(self, id: int) -> bool:
-        """
-        Mark a user's Twitter token as bad
-
-        Args:
-            id: User id
-
-        Returns:
-            Success status
-        """
-        return mark_twitter_as_bad(id)
 
 
     async def get_bad_proxies(self) -> List:

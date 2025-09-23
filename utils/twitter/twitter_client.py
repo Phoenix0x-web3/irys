@@ -1,18 +1,16 @@
-import copy
-import asyncio
 from dataclasses import dataclass
 from curl_cffi.requests import Response
 import urllib.parse
-from typing import Optional, Any, Tuple, Dict
+from typing import Optional, Any
 from utils.browser import Browser
 from loguru import logger
 import libs.twitter as twitter
 from libs.twitter.utils import remove_at_sign
 from utils.db_api.models import Wallet
-from utils.db_api.wallet_api import update_twitter_token
+from utils.db_api.wallet_api import update_twitter_token, mark_twitter_status
 import libs.baseAsyncSession as BaseAsyncSession
+from libs.twitter.errors import AccountSuspended, BadAccountToken, AccountLocked, AccountNotFound
 
-#TODO Move to Exception file
 class BadTwitter(Exception):
     pass
 
@@ -23,6 +21,14 @@ class TwitterOauthData:
     callback_url: str
     callback_response: Response
 
+@dataclass
+class TwitterStatuses:
+    ok: str = 'OK'
+    bad_token:str = "BAD_TOKEN"
+    suspended: str = 'SUSPENDED'
+    relogin: str = "RELOGIN"
+    locked: str = "LOCKED"
+    not_found: str = "NOT FOUND"
 
 class TwitterClient():
 
@@ -81,7 +87,7 @@ class TwitterClient():
         self.last_error = None
         self.error_count = 0
 
-    async def initialize(self) -> bool:
+    async def initialize(self) -> bool | None:
         """
         Initializes the Twitter client
 
@@ -96,29 +102,42 @@ class TwitterClient():
         )
 
         # Establish connection
-        await self.twitter_client.__aenter__()
+        try:
+            await self.twitter_client.__aenter__()
 
-        # Check account status
-        await self.twitter_client.establish_status()
+            # Check account status
+            await self.twitter_client.establish_status()
 
-        if self.twitter_account.status == twitter.AccountStatus.GOOD:
-            logger.success(f"{self.user} Twitter client initialized")
-            update_twitter_token(address=self.user.address, updated_token=self.twitter_account.auth_token)
-            return True
-        else:
-            error_msg = f"Problem with Twitter account status: {self.twitter_account.status}"
-            logger.error(f"{self.user} {error_msg}")
-            self.last_error = error_msg
-            self.error_count += 1
+            if self.twitter_account.status == twitter.AccountStatus.GOOD:
 
-            # If authorization issue, mark token as bad
-            if self.twitter_account.status in [
-                twitter.AccountStatus.BAD_TOKEN,
-                twitter.AccountStatus.SUSPENDED,
-            ]:
-                #TODO Replace Twitter Token to DB
-                raise BadTwitter
+                logger.success(f"{self.user} Twitter client initialized")
+                update_twitter_token(address=self.user.address, updated_token=self.twitter_account.auth_token)
 
+                self.user.twitter_status = TwitterStatuses.ok
+                return True
+
+        except AccountSuspended as e:
+            self.user.twitter_status = TwitterStatuses.suspended
+            mark_twitter_status(id=self.user.id, status=TwitterStatuses.suspended)
+            logger.error(f"{self.user} | Twitter Suspended, try to reauth manually")
+            return False
+
+        except BadAccountToken as e:
+            self.user.twitter_status = TwitterStatuses.relogin
+            mark_twitter_status(id=self.user.id, status=TwitterStatuses.bad_token)
+            logger.error(f"{self.user} | Twitter BadToken, try to reauth manually")
+            return False
+
+        except AccountLocked as e:
+            self.user.twitter_status = TwitterStatuses.locked
+            mark_twitter_status(id=self.user.id, status=TwitterStatuses.locked)
+            logger.error(f"{self.user} | Twitter Locked, replace twitter token")
+            return False
+
+        except AccountNotFound as e:
+            self.user.twitter_status = TwitterStatuses.not_found
+            mark_twitter_status(id=self.user.id, status=TwitterStatuses.not_found)
+            logger.error(f"{self.user} | Twitter Not Found, replace twitter token")
             return False
 
 

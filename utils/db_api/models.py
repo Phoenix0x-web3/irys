@@ -24,6 +24,7 @@ class Wallet(Base):
     points: Mapped[int] = mapped_column(nullable=True, default=None)
     rank: Mapped[int] = mapped_column(nullable=True, default=None)
     completed: Mapped[bool] = mapped_column(default=False)
+    next_action_time: Mapped[datetime] = mapped_column(default=datetime.now)
     next_game_action_time: Mapped[datetime] = mapped_column(default=datetime.now)
     last_faucet_claim: Mapped[datetime | None] = mapped_column(
             default=None

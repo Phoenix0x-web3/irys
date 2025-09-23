@@ -247,6 +247,9 @@ class Base:
         timeout: int = 180,
     ) -> TransactionResult:
 
+        if 'nonce' in tx_params:
+            tx_params['nonce'] = None
+
         logger.info(
             f"{self.wallet} Executing {activity_type} transaction"
         )
