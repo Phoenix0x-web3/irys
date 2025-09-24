@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 import asyncio
 from loguru import logger
 from web3.types import TxParams
@@ -55,6 +56,7 @@ class IrysOnchain(Base):
 
     @async_retry()
     async def irys_faucet(self):
+        balance_in_irys = await self.client.wallet.balance()
         captcha_handler = CaptchaHandler(wallet=self.wallet)
         token = await captcha_handler.cloudflare_token(websiteURL="https://irys.xyz/faucet", websiterKey="0x4AAAAAAA6vnrvBCtS4FAl-")
         token = token['token']
@@ -67,9 +69,30 @@ class IrysOnchain(Base):
         last_faucet_claim(address=self.wallet.address, last_faucet_claim=datetime.utcnow())
         if data['success']:
             logger.success(f"{self.wallet} success get Irys Token from Faucet")
+            return await self.wait_deposit(start_balance = balance_in_irys)
         else:
             logger.warning(f"{self.wallet} can't get Irys Token from Faucet message: {data['message']}")
         return data['success']
+
+    @async_retry()
+    async def wait_deposit(self, start_balance: TokenAmount):
+        timeout = 60 * 30   
+        start_time = time.time()
+
+        while True:
+            elapsed = time.time() - start_time
+            if elapsed > timeout:
+                logger.warning(f"{self.wallet} faucet did not arrive after {timeout} seconds")
+                return False
+
+            logger.info(f"{self.wallet} waiting for faucet (elapsed: {int(elapsed)}s)")
+            balance = await self.client.wallet.balance()
+
+            if start_balance.Wei < balance.Wei:
+                logger.info(f"{self.wallet} faucet detected")
+                return True
+
+            await asyncio.sleep(5)
     
     @async_retry()
     async def handle_balance(self):
@@ -82,7 +105,6 @@ class IrysOnchain(Base):
         if balance_in_irys.Ether < 0.01:
             faucet = await self.irys_faucet()
             if faucet:
-                await asyncio.sleep(30)
                 return await self.handle_balance()
             else:
                 return False

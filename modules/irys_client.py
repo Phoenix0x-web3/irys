@@ -49,8 +49,9 @@ class Irys(Base):
                     score = random.randint(random_score_games.get(game_type).get('min'), random_score_games.get(game_type).get('max'))
                     logger.info(f"{self.wallet} play ~{int(random_sleep/60)} minutes in {game_type} game with score: {score}")
                     await asyncio.sleep(random_sleep)
-                    finish = await self.finish_game(score=score, session_id=start_game['data']['sessionId'], game_type=game_type)
-                    if not finish:
+                    try:
+                        await self.finish_game(score=score, session_id=start_game['data']['sessionId'], game_type=game_type)
+                    except Exception:
                         errors_game += 1
                         continue
                     playing_game += 1
@@ -125,9 +126,8 @@ class Irys(Base):
             logger.success(f"{self.wallet} {game_type} {data['message']}")
             return data
         else:
-            logger.warning(f"{self.wallet} wrong with finish {game_type} game. Try again")
             logger.debug(f"{self.wallet} play status code {start_game.status_code} data: {data}")
-        return False
+            raise Exception(f"Wrong with finish game {game_type} game. Status code: {start_game.status_code}")
 
     async def handle_spritetype_game(self):
         random_playing_games = random.randint(7,10)
