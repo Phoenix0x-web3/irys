@@ -117,8 +117,8 @@ class Quests(Irys):
             logger.debug(reward_tiers)
             for tier in reward_tiers:
                 if not tier['eligible']:
-                    await galxe_client.add_type(cred_id=tier['cred_id'], campaign_id=campaign_id)
-                    for _ in range(2):
+                    for _ in range(3):
+                        await galxe_client.add_type(cred_id=tier['cred_id'], campaign_id=campaign_id)
                         sync = await galxe_client.sync_quest(cred_id=tier['cred_id'])
                         if sync:
                             logger.success(f"{self.wallet} success sync quest for {tier['name']} on Galxe")
