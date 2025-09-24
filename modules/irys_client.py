@@ -40,13 +40,11 @@ class Irys(Base):
             playing_game = 0
             errors_game = 0
             while True:
-                if playing_game >= random_playing_games or errors_game >= 3:
+                if playing_game >= random_playing_games or errors_game >= Settings().retry:
                     break
                 start_game = await self.start_arcade_game(game_type=game_type)
                 if start_game:
                     errors_game = 0
-                    playing_game += 1
-
                     random_sleep = random.randint(random_sleep_games.get(game_type).get('min'), random_sleep_games.get(game_type).get('max'))
                     score = random.randint(random_score_games.get(game_type).get('min'), random_score_games.get(game_type).get('max'))
                     logger.info(f"{self.wallet} play ~{int(random_sleep/60)} minutes in {game_type} game with score: {score}")
@@ -55,6 +53,7 @@ class Irys(Base):
                     if not finish:
                         errors_game += 1
                         continue
+                    playing_game += 1
                     random_sleep = random.randint(Settings().random_pause_between_actions_min, Settings().random_pause_between_actions_max)
                     logger.info(f"{self.wallet} sleep {random_sleep} seconds before next game")
                     await asyncio.sleep(random_sleep)
@@ -85,7 +84,7 @@ class Irys(Base):
             'gameType': f'{game_type}',
         }
         logger.debug(json_data)
-        start_game = await self.browser.post(url="https://play.irys.xyz/api/game/start", headers=headers, json=json_data)
+        start_game = await self.browser.post(url="https://play.irys.xyz/api/game/start", headers=headers, json=json_data, timeout=120)
         if not start_game:
             return False
         data = start_game.json()
@@ -93,7 +92,7 @@ class Irys(Base):
             logger.success(f"{self.wallet} success start play {game_type} game")
             return data
         else:
-            logger.warning(f"{self.wallet} wrong with play {game_type} game. Try again")
+            logger.warning(f"{self.wallet} wrong with start play {game_type} game. Try again")
             logger.debug(f"{self.wallet} play status code {start_game.status_code} data: {data}")
         return False
 
@@ -118,7 +117,7 @@ class Irys(Base):
             'sessionId': f'{session_id}',
         }
         logger.debug(json_data)
-        start_game = await self.browser.post(url="https://play.irys.xyz/api/game/complete", headers=headers, json=json_data)
+        start_game = await self.browser.post(url="https://play.irys.xyz/api/game/complete", headers=headers, json=json_data, timeout=120)
         if not start_game:
             return False
         data = start_game.json()
@@ -145,6 +144,8 @@ class Irys(Base):
                 random_sleep = random.randint(Settings().random_pause_between_actions_min, Settings().random_pause_between_actions_max)
                 logger.info(f"{self.wallet} sleep {random_sleep} seconds before next game")
                 await asyncio.sleep(random_sleep)
+            elif game == "Hour":
+                return True
             else:
                 errors_game += 1
                 continue
@@ -235,7 +236,7 @@ class Irys(Base):
             return add_count_game(address=self.wallet.address)
         elif 'error' in data and "Hourly" in data['error']:
             logger.warning(f"{self.wallet} already play in this hour more > 10 type games")
-            return True
+            return "Hour"
         else:
             logger.warning(f"{self.wallet} wrong with play game. Try again")
             logger.debug(f"{self.wallet} play status code {request.status_code} data: {data}")

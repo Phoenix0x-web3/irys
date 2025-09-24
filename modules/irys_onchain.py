@@ -1,4 +1,5 @@
 from datetime import datetime
+import asyncio
 from loguru import logger
 from web3.types import TxParams
 
@@ -81,6 +82,7 @@ class IrysOnchain(Base):
         if balance_in_irys.Ether < 0.01:
             faucet = await self.irys_faucet()
             if faucet:
+                await asyncio.sleep(30)
                 return await self.handle_balance()
             else:
                 return False
