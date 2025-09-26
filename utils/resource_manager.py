@@ -1,10 +1,17 @@
 import os
 import random
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from loguru import logger
 
 from data import config
-from utils.db_api.wallet_api import replace_bad_proxy, replace_bad_twitter, mark_proxy_as_bad, get_wallets_with_bad_proxy, get_wallets_with_bad_twitter
+from utils.db_api.wallet_api import (
+    get_wallets_with_bad_proxy,
+    get_wallets_with_bad_twitter,
+    mark_proxy_as_bad,
+    replace_bad_proxy,
+    replace_bad_twitter,
+)
 
 
 class ResourceManager:
@@ -71,9 +78,7 @@ class ResourceManager:
 
         # Save updated list back to file
         if self._save_to_file(config.RESERVE_PROXY_FILE, all_proxies):
-            logger.info(
-                f"Proxy successfully selected and removed from file. Remaining: {len(all_proxies)}"
-            )
+            logger.info(f"Proxy successfully selected and removed from file. Remaining: {len(all_proxies)}")
         else:
             logger.warning("Failed to update proxy file, but proxy was selected")
 
@@ -101,14 +106,11 @@ class ResourceManager:
 
         # Save updated list back to file
         if self._save_to_file(config.RESERVE_TWITTER_FILE, all_tokens):
-            logger.info(
-                f"Twitter token successfully selected and removed from file. Remaining: {len(all_tokens)}"
-            )
+            logger.info(f"Twitter token successfully selected and removed from file. Remaining: {len(all_tokens)}")
         else:
             logger.warning("Failed to update Twitter token file, but token was selected")
 
         return token
-
 
     async def replace_proxy(self, id: int) -> Tuple[bool, str]:
         """
@@ -148,15 +150,11 @@ class ResourceManager:
         success = replace_bad_twitter(id, new_token)
 
         if success:
-            logger.success(
-                "Twitter token successfully replaced in database"
-            )
+            logger.success("Twitter token successfully replaced in database")
             return True, "Twitter token successfully replaced"
         else:
             # Do not return token to file as it may already be used
-            logger.error(
-                "Failed to replace Twitter token in database"
-            )
+            logger.error("Failed to replace Twitter token in database")
             return False, "Failed to replace Twitter token"
 
     async def mark_proxy_as_bad(self, id: int) -> bool:
@@ -170,7 +168,6 @@ class ResourceManager:
             Success status
         """
         return mark_proxy_as_bad(id)
-
 
     async def get_bad_proxies(self) -> List:
         """

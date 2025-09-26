@@ -1,18 +1,20 @@
-from datetime import datetime
-import time
 import asyncio
+import time
+from datetime import datetime
+
 from loguru import logger
 from web3.types import TxParams
 
 from data.models import Contracts
 from data.settings import Settings
-from libs.eth_async.data.models import TokenAmount
-from utils.db_api.wallet_api import last_faucet_claim
-from utils.db_api.models import Wallet
-from utils.captcha.captcha_handler import CaptchaHandler
-from utils.retry import async_retry
 from libs.base import Base
 from libs.eth_async.client import Client
+from libs.eth_async.data.models import TokenAmount
+from utils.captcha.captcha_handler import CaptchaHandler
+from utils.db_api.models import Wallet
+from utils.db_api.wallet_api import last_faucet_claim
+from utils.retry import async_retry
+
 
 class IrysOnchain(Base):
     def __init__(self, client: Client, wallet: Wallet):
@@ -53,30 +55,29 @@ class IrysOnchain(Base):
         else:
             raise Exception(f"Error Mint Irys x Weep NFT: {result.error_message}")
 
-
     @async_retry()
     async def irys_faucet(self):
         balance_in_irys = await self.client.wallet.balance()
         captcha_handler = CaptchaHandler(wallet=self.wallet)
         token = await captcha_handler.cloudflare_token(websiteURL="https://irys.xyz/faucet", websiterKey="0x4AAAAAAA6vnrvBCtS4FAl-")
-        token = token['token']
+        token = token["token"]
         json_data = {
-            'captchaToken': f'{token}',
-            'walletAddress': f'{self.wallet.address}',
+            "captchaToken": f"{token}",
+            "walletAddress": f"{self.wallet.address}",
         }
         response = await self.browser.post(url="https://irys.xyz/api/faucet", json=json_data)
         data = response.json()
         last_faucet_claim(address=self.wallet.address, last_faucet_claim=datetime.utcnow())
-        if data['success']:
+        if data["success"]:
             logger.success(f"{self.wallet} success get Irys Token from Faucet")
-            return await self.wait_deposit(start_balance = balance_in_irys)
+            return await self.wait_deposit(start_balance=balance_in_irys)
         else:
             logger.warning(f"{self.wallet} can't get Irys Token from Faucet message: {data['message']}")
-        return data['success']
+        return data["success"]
 
     @async_retry()
     async def wait_deposit(self, start_balance: TokenAmount):
-        timeout = 60 * 30   
+        timeout = 60 * 30
         start_time = time.time()
 
         while True:
@@ -93,7 +94,7 @@ class IrysOnchain(Base):
                 return True
 
             await asyncio.sleep(5)
-    
+
     @async_retry()
     async def handle_balance(self):
         balance_in_platform = await self.check_platform_balance()
@@ -111,7 +112,7 @@ class IrysOnchain(Base):
         amount = float(balance_in_irys.Ether) * 0.9
         amount = TokenAmount(amount=amount)
         return await self.bridge_to_platform(amount=amount)
-        
+
     async def bridge_to_platform(self, amount: TokenAmount):
         contract = await self.client.contracts.get(Contracts.IRYS)
         data = contract.encode_abi("deposit")

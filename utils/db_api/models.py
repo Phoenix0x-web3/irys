@@ -1,16 +1,17 @@
-import random
-from datetime import datetime,timedelta
+from datetime import datetime
 
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped, mapped_column
-from data.settings import Settings
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
 from data.constants import PROJECT_SHORT_NAME
+from data.settings import Settings
+
 
 class Base(DeclarativeBase):
     pass
 
+
 class Wallet(Base):
-    __tablename__ = 'wallets'
+    __tablename__ = "wallets"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     private_key: Mapped[str] = mapped_column(unique=True, index=True)
@@ -26,13 +27,9 @@ class Wallet(Base):
     completed: Mapped[bool] = mapped_column(default=False)
     next_action_time: Mapped[datetime] = mapped_column(default=datetime.now)
     next_game_action_time: Mapped[datetime] = mapped_column(default=datetime.now)
-    last_faucet_claim: Mapped[datetime | None] = mapped_column(
-            default=None
-        )
-
+    last_faucet_claim: Mapped[datetime | None] = mapped_column(default=None)
 
     def __repr__(self):
         if Settings().show_wallet_address_logs:
-            return f'[{PROJECT_SHORT_NAME} | {self.id} | {self.address}]'
-        return f'[{PROJECT_SHORT_NAME} | {self.id}]'
-        
+            return f"[{PROJECT_SHORT_NAME} | {self.id} | {self.address}]"
+        return f"[{PROJECT_SHORT_NAME} | {self.id}]"
