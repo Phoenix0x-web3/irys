@@ -1,4 +1,3 @@
-
 from utils.db_api.db import DB
 from utils.db_api.models import Wallet
 

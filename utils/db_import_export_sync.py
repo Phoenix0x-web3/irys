@@ -74,7 +74,6 @@ class Import:
         private_keys = read_lines("private_keys.txt")
         proxies = read_lines("proxy.txt")
         twitter_tokens = read_lines("twitter_tokens.txt")
-        discord_tokens = read_lines("discord_tokens.txt")
 
         if not private_keys:
             raise ValueError("File private_keys.txt must not be empty")
@@ -113,7 +112,7 @@ class Import:
             # Check pwd1
             try:
                 check_wallet = check_wallets[0]
-                pk = get_private_key(check_wallet.private_key)
+                get_private_key(check_wallet.private_key)
 
             except Exception as e:
                 sys.exit(f"Database not empty | You must use same password for new wallets | {e}")
@@ -173,7 +172,6 @@ class Sync:
     def parse_tokens_and_proxies_from_txt(wallets: List) -> List[Dict[str, Optional[str]]]:
         proxies = read_lines("proxy.txt")
         twitter_tokens = read_lines("twitter_tokens.txt")
-        discord_tokens = read_lines("discord_tokens.txt")
 
         record_count = len(wallets)
 
