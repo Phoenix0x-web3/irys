@@ -10,6 +10,7 @@ from check_python import check_python_version
 from data.constants import PROJECT_NAME
 from functions.activity import activity
 from utils.create_files import create_files, reset_folder
+from utils.csv_exporter.exporter import export_to_csv
 from utils.db_import_export_sync import Export, Import, Sync
 from utils.git_version import check_for_updates
 from utils.output import show_channel_info
@@ -25,7 +26,11 @@ PROJECT_ACTIONS = [
     "Back",
 ]
 
-UTILS_ACTIONS = ["1. Reset files Folder", "Back"]
+UTILS_ACTIONS = [
+    "1. Reset files Folder",
+    "2. Export data from database to CSV",
+    "Back",
+]
 
 
 async def choose_action():
@@ -95,6 +100,18 @@ async def choose_action():
         if answer.lower() == "y":
             reset_folder()
             console.print("Files folder success reset")
+
+    elif action == "2. Export data from database to CSV":
+        answer = input("Export excrypted prive keys to CSV Y/N: ")
+        if answer.lower() == "y":
+            result = export_to_csv(export_private_keys=True)
+        else:
+            result = export_to_csv(export_private_keys=False)
+
+        if result[0]:
+            console.print("[bold green]Successfully exported to:[/bold green]", result[1])
+        elif not result[0]:
+            console.print(f"[bold red]Export Failed [/bold red]")
 
     elif action == "Exit":
         console.print(f"[bold red]Exiting {PROJECT_NAME}...[/bold red]")
