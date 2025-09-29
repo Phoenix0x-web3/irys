@@ -45,6 +45,8 @@ class Controller:
         return
 
     async def complete_galxe_quests(self):
+        logger.warning(f"Galxe is unavailable now fixing bugs")
+        return
         galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
         functions = [
             self.quest_client.complete_twitter_galxe_quests,
