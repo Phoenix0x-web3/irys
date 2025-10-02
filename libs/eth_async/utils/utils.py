@@ -38,9 +38,7 @@ def update_dict(modifiable: dict, template: dict, rearrange: bool = True, remove
             modifiable.update({key: value})
 
         elif isinstance(value, dict):
-            modifiable[key] = update_dict(
-                modifiable=modifiable[key], template=value, rearrange=rearrange, remove_extra_keys=remove_extra_keys
-            )
+            modifiable[key] = update_dict(modifiable=modifiable[key], template=value, rearrange=rearrange, remove_extra_keys=remove_extra_keys)
 
     if rearrange:
         new_dict = {}

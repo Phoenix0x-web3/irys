@@ -11,7 +11,7 @@ from utils.db_api.models import Wallet
 
 
 class MailTimedOut(Exception):
-    """Custom exception for email timeout errors."""
+    """Custom exception for email timeout errors._"""
 
     pass
 
