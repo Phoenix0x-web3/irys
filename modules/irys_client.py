@@ -46,9 +46,7 @@ class Irys(Base):
                 start_game = await self.start_arcade_game(game_type=game_type)
                 if start_game:
                     errors_game = 0
-                    random_sleep = random.randint(
-                        random_sleep_games.get(game_type).get("min"), random_sleep_games.get(game_type).get("max")
-                    )
+                    random_sleep = random.randint(random_sleep_games.get(game_type).get("min"), random_sleep_games.get(game_type).get("max"))
                     score = random.randint(random_score_games.get(game_type).get("min"), random_score_games.get(game_type).get("max"))
                     logger.info(f"{self.wallet} play ~{int(random_sleep / 60)} minutes in {game_type} game with score: {score}")
                     await asyncio.sleep(random_sleep)
