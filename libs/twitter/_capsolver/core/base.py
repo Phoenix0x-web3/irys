@@ -165,9 +165,7 @@ class BaseCaptcha:
         """
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(
-                    parse.urljoin(self.__request_url, url_postfix), json=self.task_payload.dict(exclude_none=True)
-                ) as resp:
+                async with session.post(parse.urljoin(self.__request_url, url_postfix), json=self.task_payload.dict(exclude_none=True)) as resp:
                     if resp.status in VALID_STATUS_CODES:
                         return await resp.json()
                     else:
@@ -188,9 +186,7 @@ class BaseCaptcha:
         async with aiohttp.ClientSession() as session:
             for _ in attempts:
                 try:
-                    async with session.post(
-                        parse.urljoin(self.__request_url, url_postfix), json=get_result_payload.dict(exclude_none=True)
-                    ) as resp:
+                    async with session.post(parse.urljoin(self.__request_url, url_postfix), json=get_result_payload.dict(exclude_none=True)) as resp:
                         if resp.status in VALID_STATUS_CODES:
                             result_data = CaptchaResponseSer(**await resp.json())
                             if result_data.status in (ResponseStatusEnm.Ready, ResponseStatusEnm.Failed):

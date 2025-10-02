@@ -299,18 +299,18 @@ class Network:
         self,
         name: str,
         rpc: str,
+        coin_symbol: str,
         decimals: int | None = None,
         chain_id: int | None = None,
         tx_type: int = 0,
-        coin_symbol: str | None = None,
         explorer: str | None = None,
         api: API | None = None,
     ) -> None:
         self.name: str = name.lower()
         self.rpc: str = rpc
+        self.coin_symbol: str = coin_symbol
         self.chain_id: int | None = chain_id
         self.tx_type: int = tx_type
-        self.coin_symbol: str | None = coin_symbol
         self.explorer: str | None = explorer
         self.decimals = decimals
         self.api = api
@@ -432,7 +432,7 @@ class Networks:
     )
 
     BSC = Network(
-        name="BSC",
+        name="bsc",
         rpc=RPC_MAP["bsc"],
         chain_id=56,
         tx_type=2,
@@ -458,7 +458,7 @@ class Networks:
         rpc=RPC_MAP["polygon"],
         chain_id=137,
         tx_type=2,
-        coin_symbol="MATIC",
+        coin_symbol="POL",
         decimals=18,
         explorer="https://polygonscan.com/",
         api=API(key=config.POLYGON_API_KEY, url="https://api.polygonscan.com/api", docs="https://docs.polygonscan.com/"),
@@ -472,9 +472,7 @@ class Networks:
         coin_symbol="ETH",
         decimals=18,
         explorer="https://soneium.blockscout.com/",
-        api=API(
-            key="UNICHAIN_SEPOLIA_API_KEY", url="https://soneium.blockscout.com/api/v2", docs="https://docs.blockscout.com/devs/apis/rpc"
-        ),
+        api=API(key="UNICHAIN_SEPOLIA_API_KEY", url="https://soneium.blockscout.com/api/v2", docs="https://docs.blockscout.com/devs/apis/rpc"),
     )
 
     LISK = Network(
@@ -617,9 +615,7 @@ class Networks:
         coin_symbol="ETH",
         decimals=18,
         explorer="https://sepolia.etherscan.io",
-        api=API(
-            key=config.SEPOLIA_API_KEY, url="https://api-sepolia.etherscan.io/api", docs="https://docs.etherscan.io/v/sepolia-etherscan/"
-        ),
+        api=API(key=config.SEPOLIA_API_KEY, url="https://api-sepolia.etherscan.io/api", docs="https://docs.etherscan.io/v/sepolia-etherscan/"),
     )
 
     PharosTestnet = Network(
