@@ -1,3 +1,4 @@
+import asyncio
 from loguru import logger
 from datetime import datetime,timedelta
 import random
@@ -46,6 +47,9 @@ class Controller:
 
     async def complete_galxe_quests(self):
         galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
+        if await galxe_client.handle_subscribe():
+            logger.success(f"{self.wallet} subscribed to Galxe Premium")
+
         functions = [
             self.quest_client.complete_twitter_galxe_quests,
             self.quest_client.complete_spritetype_galxe_quests,
@@ -59,6 +63,8 @@ class Controller:
                 await func(galxe_client)
             except Exception:
                 continue
+        await self.quest_client.get_and_claim_mystery_box(galxe_client)
+        await self.quest_client.claim_rewards(galxe_client)
         await self.quest_client.update_points(galxe_client)
         return
 

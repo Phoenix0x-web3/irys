@@ -380,9 +380,7 @@ class TwitterClient:
             timeout=30,
         )
 
-        return TwitterOauthData(
-            auth_token=oauth_token, state_verifier_token=oauth_verifer, callback_url=redirect_url, callback_response=resp
-        )
+        return TwitterOauthData(auth_token=oauth_token, state_verifier_token=oauth_verifer, callback_url=redirect_url, callback_response=resp)
 
     async def connect_twitter_to_site_oauth2(self, twitter_auth_url: str) -> TwitterOauthData:
         """

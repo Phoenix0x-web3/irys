@@ -17,9 +17,7 @@ class Wallet:
     def __init__(self, client: Client) -> None:
         self.client = client
 
-    async def balance(
-        self, token: types.Contract | None = None, address: str | ChecksumAddress | None = None, decimals: int = 18
-    ) -> TokenAmount:
+    async def balance(self, token: types.Contract | None = None, address: str | ChecksumAddress | None = None, decimals: int = 18) -> TokenAmount:
         if not address:
             address = self.client.account.address
 

@@ -1,7 +1,6 @@
 RPC_MAP = {
     "ethereum": "https://0xrpc.io/eth",
-    "base": "https://0xrpc.io/base",
-    "base": "https://rpc.therpc.io/base",
+    "base": "https://base.drpc.org",
     "optimism": "https://0xrpc.io/op",
     "arbitrum": "https://arb1.arbitrum.io/rpc/",
     "soneium": "https://rpc.soneium.org",
