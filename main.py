@@ -1,6 +1,11 @@
 import asyncio
 import platform
 
+from utils.pyarmor_bootstrap import ensure_pyarmor_runtime_on_path
+
+# must be called before any other imports
+ensure_pyarmor_runtime_on_path()
+
 import inquirer
 from colorama import Fore
 from inquirer import themes
@@ -17,7 +22,7 @@ from utils.output import show_channel_info
 console = Console()
 
 PROJECT_ACTIONS = [
-    "1. Run All Activities",
+    "1. Run All Activities______",
     "2. Start Complete SpriteType Games",
     "3. Start Complete All Portals Games",
     "4. Start Complete Galxe Quests",
@@ -115,6 +120,6 @@ if __name__ == "__main__":
     show_channel_info(PROJECT_NAME)
 
     if platform.system() == "Windows":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     asyncio.run(main())

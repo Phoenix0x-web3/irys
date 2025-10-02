@@ -18,7 +18,7 @@ async def random_sleep_before_start(wallet):
     random_sleep = random.randint(Settings().random_pause_start_wallet_min, Settings().random_pause_start_wallet_max)
     now = datetime.now()
 
-    logger.info(f"{wallet} Start at {now + timedelta(seconds=random_sleep)} sleep {random_sleep} seconds before start actions")
+    logger.info(f"{wallet} _Start at {now + timedelta(seconds=random_sleep)} sleep {random_sleep} seconds before start actions")
     await asyncio.sleep(random_sleep)
 
 
@@ -43,7 +43,7 @@ async def execute(wallets: List[Wallet], task_func, random_pause_wallet_after_co
             break
 
         # update dynamically the pause time
-        random_pause_wallet_after_completion = random.randint(60 * 1, 60 * 2)
+        random_pause_wallet_after_completion = random.randint(60 * 5, 60 * 10)
 
         next_run = datetime.now() + timedelta(seconds=random_pause_wallet_after_completion)
         logger.info(f"Sleeping {random_pause_wallet_after_completion} seconds. Next run at: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -69,9 +69,7 @@ async def activity(action: int):
         await execute(
             wallets,
             start_main_action,
-            random.randint(
-                Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max
-            ),
+            random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max),
         )
 
     if action == 2 and wallets:
@@ -116,9 +114,7 @@ async def start_main_action(wallet):
             await func()
         except Exception:
             continue
-    random_delay = random.randint(
-        Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max
-    )
+    random_delay = random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max)
     next_time = now + timedelta(seconds=random_delay)
     success_update = update_next_action_time(address=wallet.address, next_action_time=next_time)
     await controller.complete_galxe_quests()
