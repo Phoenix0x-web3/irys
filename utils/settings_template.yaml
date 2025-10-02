@@ -53,14 +53,28 @@ random_pause_start_wallet:
 #Perform automatic replacement from proxy reserve files
 auto_replace_proxy: True
 
-# Api Key from https://dash.capmonster.cloud/
-capmonster_api_key: ""
 #Network can use for bridge to Gravity, for Galxe quests. Available: ethereum, arbitrum, base, optimism, ink, mode, bsc, op_bnb, polygon, soneium, lisk, unichain, avalanche, zksync, linea
 network_for_bridge: [arbitrum, base, optimism]
 #Random diaposon for ETH bridge. (0.1$ - 0.5$ in ETH default)
 random_eth_for_bridge:
   min: 0.000025
   max: 0.0001
+
+# Api Key from https://dash.capmonster.cloud/
+capmonster_api_key: ""
+#Buy galxe subscription. Need 2$ in Native. Available networks: Arbitrum, Base, Polygon, Bsc
+buy_galxe_subscription: True
+#OKX api keys. Using withdraw for buy Galxe subscription
+okx_api_key: ''
+okx_api_secret: ''
+okx_passphrase: ''
+
+#Withdrawal amount in USD for subscribe
+withdrawal_amount:
+  min: 2.2
+  max: 2.5
+#Network can use for withdraw for galxe subscription. 
+network_for_withdraw: [arbitrum, base, optimism, polygon, linea]
 
 #Irys Onchain
 #Multiple Mint. Minting more > 1 NFT to Wallet

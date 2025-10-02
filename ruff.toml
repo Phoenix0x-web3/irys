@@ -1,6 +1,6 @@
 # ruff.toml
 
-# Exclude a variety of commonly ignored directories.
+# Exclude generated/irrelevant paths
 exclude = [
     ".bzr",
     ".direnv",
@@ -28,30 +28,37 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "runtimes",          
     "functions/controller.py",
     "modules/tesst_module.py",
     "utils/captcha/*.py",
-    "utils/discord/*.py"
+    "utils/discord/*.py",
+    "modules/encoder/*.py",
+    "public-repo/**",
 ]
 
-# Same as Black.
-line-length = 140
+# Formatting
+line-length = 150
 indent-width = 4
-
-# Target Python version
 target-version = "py312"
 
 [lint]
+# Select rules
 select = [
     "I",
     "F401",
     "F841",
 ]
+
+# If you need a custom dummy variable regex, it must be a STRING:
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Put fixable/unfixable inside [lint]
 fixable = ["ALL"]
 unfixable = []
 
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+[lint.per-file-ignores]
+"runtimes/**" = ["F401", "I001", "E402", "F403", "F405"]
 
 [format]
 quote-style = "double"

@@ -157,9 +157,7 @@ class Import:
             remove_line_from_file(wl.private_key, "private_keys.txt")
 
             if not wallet_instance.twitter_token:
-                logger.warning(
-                    f"{wallet_instance.id} | {wallet_instance.address} | Twitter Token not found, Twitter Action will be skipped"
-                )
+                logger.warning(f"{wallet_instance.id} | {wallet_instance.address} | Twitter Token not found, Twitter Action will be skipped")
 
             db.insert(wallet_instance)
             imported.append(wallet_instance)
