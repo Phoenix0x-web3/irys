@@ -19,7 +19,7 @@ Irys is a blockchain protocol focused on data availability, ensuring that inform
 - Galxe twitter
 
 ## Requirements
-- Python version 3.10 - 3.12 
+- Python version 3.12 
 - Private keys EVM
 - Captcha [Capmonster](https://dash.capmonster.cloud/) for Galxe claim
 - Proxy (optional)

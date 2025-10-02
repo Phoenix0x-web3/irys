@@ -18,7 +18,7 @@ async def random_sleep_before_start(wallet):
     random_sleep = random.randint(Settings().random_pause_start_wallet_min, Settings().random_pause_start_wallet_max)
     now = datetime.now()
 
-    logger.info(f"{wallet} Start at {now + timedelta(seconds=random_sleep)} sleep {random_sleep} seconds before start actions")
+    logger.info(f"{wallet} _Start at {now + timedelta(seconds=random_sleep)} sleep {random_sleep} seconds before start actions")
     await asyncio.sleep(random_sleep)
 
 
@@ -69,9 +69,7 @@ async def activity(action: int):
         await execute(
             wallets,
             start_main_action,
-            random.randint(
-                Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max
-            ),
+            random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max),
         )
 
     if action == 2 and wallets:
@@ -116,9 +114,7 @@ async def start_main_action(wallet):
             await func()
         except Exception:
             continue
-    random_delay = random.randint(
-        Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max
-    )
+    random_delay = random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max)
     next_time = now + timedelta(seconds=random_delay)
     success_update = update_next_action_time(address=wallet.address, next_action_time=next_time)
     await controller.complete_galxe_quests()
