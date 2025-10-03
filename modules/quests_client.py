@@ -92,7 +92,7 @@ class Quests(Irys):
         logger.info(f"{self.wallet} have {self.wallet.points} points and rank {self.wallet.rank} in Galxe")
 
     async def complete_irys_other_games_quests(self, galxe_client: GalxeClient):
-        campaign_ids = ["GCtydt8Ewv", "GCLV4t8ikW", "GC9r4t8ajy", "GCsd4t89L9", "GCFE4t8HrF"]
+        campaign_ids = ["GCtydt8Ewv"]
         random.shuffle(campaign_ids)
         for campaign_id in campaign_ids:
             info = await galxe_client.get_quest_cred_list(campaign_id=campaign_id)
