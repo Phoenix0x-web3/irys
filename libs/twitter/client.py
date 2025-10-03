@@ -163,8 +163,7 @@ class Client(BaseHTTPClient):
         if auth_token and auth_token != self.account.auth_token:
             self.account.auth_token = auth_token
             logger.debug(
-                f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username})"
-                f" Requested new auth_token!"
+                f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username}) Requested new auth_token!"
             )
 
         try:
@@ -1389,9 +1388,7 @@ class Client(BaseHTTPClient):
         url = "https://api.x.com/1.1/onboarding/task.json"
         response, data = await self.request("POST", url, **request_kwargs)
         subtasks = [Subtask.from_raw_data(subtask_data) for subtask_data in data["subtasks"]]
-        log_message = (
-            f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username}) Requested subtasks:"
-        )
+        log_message = f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username}) Requested subtasks:"
         for subtask in subtasks:
             log_message += f"\n\t{subtask.id}"
             if subtask.primary_text:
@@ -1633,8 +1630,7 @@ class Client(BaseHTTPClient):
                 except HTTPException as exc:
                     if 399 in exc.error_codes:
                         logger.warning(
-                            f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username})"
-                            f" Bad email!"
+                            f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username}) Bad email!"
                         )
                         raise TwitterException(f"Failed to login. Task id: LoginAcid. Bad email!")
                     else:
@@ -1653,8 +1649,7 @@ class Client(BaseHTTPClient):
             except HTTPException as exc:
                 if 399 in exc.error_codes:
                     logger.warning(
-                        f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username})"
-                        f" Bad TOTP secret!"
+                        f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username}) Bad TOTP secret!"
                     )
                     if not self.account.backup_code:
                         raise TwitterException(f"Failed to login. Task id: LoginTwoFactorAuthChallenge. No backup code!")
@@ -1703,8 +1698,7 @@ class Client(BaseHTTPClient):
         if update_backup_code:
             await self.update_backup_code()
             logger.warning(
-                f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username})"
-                f" Requested new backup code!"
+                f"(auth_token={self.account.hidden_auth_token}, id={self.account.id}, username={self.account.username}) Requested new backup code!"
             )
             # TODO Также обновлять totp_secret
 

@@ -210,9 +210,7 @@ async def check_for_updates(
         if is_private:
             latest_hash, latest_date, latest_message = get_latest_commit_from_git(repo_path, remote_name)
             if not latest_hash:
-                logger.warning(
-                    "Warning: Failed to fetch updates via Git. Ensure SSH/HTTPS credentials are configured for private repositories."
-                )
+                logger.warning("Warning: Failed to fetch updates via Git. Ensure SSH/HTTPS credentials are configured for private repositories.")
             if local_hash == latest_hash:
                 latest_dt = datetime.fromisoformat(latest_date.replace("Z", "+00:00"))
                 formatted_date = latest_dt.strftime("%d.%m.%Y %H:%M UTC")
