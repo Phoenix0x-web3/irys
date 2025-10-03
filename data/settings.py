@@ -42,6 +42,14 @@ class Settings(Singleton):
 
         self.retry = json_data.get("retry", 3)
         self.multiple_mint = json_data.get("multiple_mint", False)
+        self.buy_galxe_subscription = json_data.get("buy_galxe_subscription", True)
+
+        self.okx_api_key = json_data.get("okx_api_key", "")
+        self.okx_api_secret = json_data.get("okx_api_secret", "")
+        self.okx_passphrase = json_data.get("okx_passphrase", "")
+        self.withdrawal_amount_min = json_data.get("withdrawal_amount", {}).get("min")
+        self.withdrawal_amount_max = json_data.get("withdrawal_amount", {}).get("max")
+        self.network_for_withdraw = json_data.get("network_for_withdraw", [])
 
 
 # Configure the logger based on the settings
@@ -52,4 +60,4 @@ if settings.log_level not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
 logger.remove()  # Remove the default logger
 logger.add(sys.stderr, level=settings.log_level)
 
-logger.add(LOG_FILE, level="DEBUG")
+logger.add(LOG_FILE, retention="3 days", level="DEBUG")
