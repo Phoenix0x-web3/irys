@@ -47,6 +47,11 @@ class Controller:
 
     async def complete_galxe_quests(self):
         galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
+        
+        if galxe_client.is_account_banned():
+            logger.error(f"{self.wallet} Galxe account is banned!")
+            return
+        
         if await galxe_client.handle_subscribe():
             logger.success(f"{self.wallet} subscribed to Galxe Premium")
 

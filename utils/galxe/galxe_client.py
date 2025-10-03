@@ -458,6 +458,9 @@ class GalxeClient:
         self.galxe_id = session["data"]["addressInfo"]["id"]
         self.client_id = generate_ga_cookie_value()
 
+    async def is_account_banned(self):
+        return await self.session() is None
+    
     async def session(self):
         if not self.bearer_token:
             await self.auth()
@@ -470,7 +473,7 @@ class GalxeClient:
         }
         data = await self.request(json_data=json_data)
         if data["data"]["addressInfo"]["isBot"]:
-            logger.error(f"{self.wallet} Galxe account is banned!")
+            return None
         return data
 
     async def read_quiz(self, cred_id):
