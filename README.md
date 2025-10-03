@@ -19,7 +19,7 @@ Irys is a blockchain protocol focused on data availability, ensuring that inform
 - Galxe twitter
 
 ## Requirements
-- Python version 3.10 - 3.12 
+- Python version 3.12 
 - Private keys EVM
 - Captcha [Capmonster](https://dash.capmonster.cloud/) for Galxe claim
 - Proxy (optional)
@@ -131,6 +131,19 @@ auto_replace_proxy: true
 
 # Api Key from https://dash.capmonster.cloud/
 capmonster_api_key: ""
+
+#OKX api keys. Using withdraw for buy Galxe subscription
+okx_api_key: ''
+okx_api_secret: ''
+okx_passphrase: ''
+
+#Withdrawal amount in USD for galxe  subscription
+withdrawal_amount:
+  min: 2.2
+  max: 2.5
+
+#Network can use for withdraw for galxe subscription. 
+network_for_withdraw: [arbitrum, base, optimism, polygon, linea]
 
 #Network can use for bridge to Gravity, for Galxe quests. Available: ethereum, arbitrum, base, optimism, ink, mode, bsc, op_bnb, polygon, soneium, lisk, unichain, avalanche, zksync 
 network_for_bridge: [arbitrum, optimism, base]
