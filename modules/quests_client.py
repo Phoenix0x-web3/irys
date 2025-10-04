@@ -27,6 +27,8 @@ class Quests(Irys):
         gold = info["data"]["addressInfo"]["userLevel"]["gold"]
         value = info["data"]["addressInfo"]["userLevel"]["level"]["value"]
 
+        logger.info(f"{self.wallet} preparing for open legendary box. Gold: {gold}. Lvl: {value}")
+
         required_gold_min = 799
         if int(gold) < required_gold_min or int(value) < 3:
             logger.debug(f"{self.wallet} don’t have enough {required_gold_min} GG to open the legendary box. Have GG: {gold}. Have Lvl: {value}")
