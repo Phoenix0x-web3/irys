@@ -1,0 +1,69 @@
+# ruff.toml
+
+# Exclude generated/irrelevant paths
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "runtimes",          
+    "functions/controller.py",
+    "modules/tesst_module.py",
+    "utils/captcha/*.py",
+    "utils/discord/*.py",
+    "modules/encoder/*.py",
+    "public-repo/**",
+]
+
+# Formatting
+line-length = 150
+indent-width = 4
+target-version = "py312"
+
+[lint]
+# Select rules
+select = [
+    "I",
+    "F401",
+    "F841",
+]
+
+# If you need a custom dummy variable regex, it must be a STRING:
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Put fixable/unfixable inside [lint]
+fixable = ["ALL"]
+unfixable = []
+
+[lint.per-file-ignores]
+"runtimes/**" = ["F401", "I001", "E402", "F403", "F405"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
