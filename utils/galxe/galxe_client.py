@@ -11,6 +11,7 @@ from data.settings import Settings
 from libs.base import Base
 from libs.eth_async.client import Client
 from libs.eth_async.data.models import Network, Networks, TokenAmount
+from modules.encoder.galxe_utils import generate_ga_cookie_value, get_captcha, make_x_unique_link_id
 from utils.browser import Browser
 from utils.db_api.models import Wallet
 from utils.exchanger.okx import OKXActions
@@ -18,7 +19,6 @@ from utils.retry import async_retry
 
 from .galxe_auth import AuthClient
 from .galxe_onchain import GalxeOnchain
-from .galxe_utils import generate_ga_cookie_value, get_captcha, make_x_unique_link_id
 
 
 class GalxeClient:
