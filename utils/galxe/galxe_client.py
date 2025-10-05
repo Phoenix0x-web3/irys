@@ -392,13 +392,16 @@ class GalxeClient:
                 bridge = await self.handle_bridge_gravity()
                 if not bridge:
                     return False
-            return await self.galxe_onchain.handle_claim_onchain_points(
+            res = await self.galxe_onchain.handle_claim_onchain_points(
                 loyalty_point_address=loyalty_point_address,
                 verify_ids=verify_ids,
                 amounts=amounts,
                 claim_fee=claim_fee,
                 signature=signature,
             )
+            if res:
+                logger.success(f"{self.wallet} success onchain claim {sum(amounts)} points in Galxe {verify_ids} campaign.")
+            return res
 
     async def get_payment_task_info(self, task_id):
         json_data = {
