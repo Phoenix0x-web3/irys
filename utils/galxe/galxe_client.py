@@ -465,7 +465,10 @@ class GalxeClient:
         self.client_id = generate_ga_cookie_value()
 
     async def is_account_banned(self):
-        return await self.session() is None
+        session = await self.session()
+        if session["data"]["addressInfo"]["isBot"]:
+            return True
+        return False
 
     async def session(self):
         if not self.bearer_token:
@@ -478,8 +481,6 @@ class GalxeClient:
             "query": "query BasicUserInfo($address: String!) {\n  addressInfo(address: $address) {\n    id\n    username\n    avatar\n    address\n    evmAddressSecondary {\n      address\n      __typename\n    }\n    userLevel {\n      level {\n        name\n        logo\n        minExp\n        maxExp\n        value\n        __typename\n      }\n      exp\n      gold\n      ggRecall\n      __typename\n    }\n    ggInviteeInfo {\n      questCount\n      ggCount\n      __typename\n    }\n    ggInviteCode\n    ggInviter {\n      id\n      username\n      __typename\n    }\n    isBot\n    hasEmail\n    solanaAddress\n    aptosAddress\n    seiAddress\n    injectiveAddress\n    flowAddress\n    starknetAddress\n    bitcoinAddress\n    suiAddress\n    stacksAddress\n    azeroAddress\n    archwayAddress\n    bitcoinSignetAddress\n    xrplAddress\n    algorandAddress\n    tonAddress\n    kadenaAddress\n    hasEvmAddress\n    hasSolanaAddress\n    hasAptosAddress\n    hasInjectiveAddress\n    hasFlowAddress\n    hasStarknetAddress\n    hasBitcoinAddress\n    hasSuiAddress\n    hasStacksAddress\n    hasAzeroAddress\n    hasArchwayAddress\n    hasBitcoinSignetAddress\n    hasXrplAddress\n    hasAlgorandAddress\n    hasTonAddress\n    hasKadenaAddress\n    hasTwitter\n    hasGithub\n    hasDiscord\n    hasTelegram\n    hasWorldcoin\n    displayEmail\n    displayTwitter\n    displayGithub\n    displayDiscord\n    displayTelegram\n    displayWorldcoin\n    displayNamePref\n    email\n    twitterUserID\n    twitterUserName\n    githubUserID\n    githubUserName\n    discordUserID\n    discordUserName\n    telegramUserID\n    telegramUserName\n    worldcoinID\n    enableEmailSubs\n    subscriptions\n    isWhitelisted\n    isInvited\n    isAdmin\n    accessToken\n    humanityType\n    __typename\n  }\n}",
         }
         data = await self.request(json_data=json_data)
-        if data["data"]["addressInfo"]["isBot"]:
-            return None
         return data
 
     async def read_quiz(self, cred_id):

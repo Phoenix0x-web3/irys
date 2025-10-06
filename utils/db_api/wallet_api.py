@@ -107,6 +107,24 @@ def replace_bad_proxy(id: int, new_proxy: str) -> bool:
     return True
 
 
+def mark_galxe_account_banned(id: int) -> bool:
+    wallet = db.one(Wallet, Wallet.id == id)
+    if not wallet:
+        return False
+    wallet.galxe_account_banned = True
+    db.commit()
+    return True
+
+
+def add_new_galxe_win(id: int, token_win: str) -> bool:
+    wallet = db.one(Wallet, Wallet.id == id)
+    if not wallet:
+        return False
+    wallet.galxe_tokens_win = (wallet.galxe_tokens_win or []) + [token_win]
+    db.commit()
+    return True
+
+
 def replace_bad_twitter(id: int, new_token: str) -> bool:
     wallet = db.one(Wallet, Wallet.id == id)
     if not wallet:

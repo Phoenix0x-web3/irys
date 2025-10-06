@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy import JSON
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from data.constants import PROJECT_SHORT_NAME
@@ -18,6 +20,8 @@ class Wallet(Base):
     address: Mapped[str] = mapped_column(unique=True)
     proxy_status: Mapped[str] = mapped_column(default="OK", nullable=True)
     proxy: Mapped[str] = mapped_column(default=None, nullable=True)
+    galxe_account_banned: Mapped[bool] = mapped_column(default=False)
+    galxe_tokens_win: Mapped[list] = mapped_column(MutableList.as_mutable(JSON), default=list)
     twitter_token: Mapped[str] = mapped_column(default=None, nullable=True)
     twitter_status: Mapped[str] = mapped_column(default="OK", nullable=True)
     typing_level: Mapped[int] = mapped_column(nullable=False)
