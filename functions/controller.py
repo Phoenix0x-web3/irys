@@ -10,6 +10,7 @@ from modules.quests_client import Quests
 from modules.irys_onchain import IrysOnchain
 
 from utils.db_api.models import Wallet
+from utils.db_api.wallet_api import mark_galxe_account_banned
 from utils.galxe.galxe_client import GalxeClient
 
 
@@ -50,6 +51,7 @@ class Controller:
         
         if await galxe_client.is_account_banned():
             logger.error(f"{self.wallet} Galxe account is banned!")
+            mark_galxe_account_banned(id=self.wallet.id)
             return
         
         if await galxe_client.handle_subscribe():

@@ -7,7 +7,7 @@ from data.settings import Settings
 from libs.eth_async.client import Client
 from libs.eth_async.data.models import Network, Networks, TokenAmount
 from utils.db_api.models import Wallet
-from utils.db_api.wallet_api import update_points, update_rank
+from utils.db_api.wallet_api import add_new_galxe_win, update_points, update_rank
 from utils.galxe.galxe_client import GalxeClient
 from utils.twitter.twitter_client import TwitterClient
 
@@ -80,6 +80,7 @@ class Quests(Irys):
                 redeem_token = await galxe_client.redeem_tokens_rewards(token_id=token_id, token_amount=amount.Wei)
                 if redeem_token["data"]["redeemToken"]["success"]:
                     logger.success(f"{self.wallet} success claim {amount.Ether} {token_symbol} Rewards")
+                    add_new_galxe_win(id=self.wallet.id, token_win=f"{amount.Ether}{token_symbol}")
                     return True
                 else:
                     logger.warning(f"{self.wallet} can't claim rewards. Data: {redeem_token}")

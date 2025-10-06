@@ -15,6 +15,7 @@ from check_python import check_python_version
 from data.constants import PROJECT_NAME
 from functions.activity import activity
 from utils.create_files import create_files, reset_folder
+from utils.db_api.migrate import migrate
 from utils.db_import_export_sync import Export, Import, Sync
 from utils.git_version import check_for_updates
 from utils.output import show_channel_info
@@ -111,6 +112,7 @@ async def choose_action():
 async def main():
     check_python_version()
     create_files()
+    migrate()
 
     await check_for_updates(repo_name=PROJECT_NAME)
     await choose_action()
