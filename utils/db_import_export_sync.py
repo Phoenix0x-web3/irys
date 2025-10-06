@@ -222,11 +222,12 @@ class Sync:
                 wallet_data = wallet_auxiliary_data[wallet_instance.id - 1]
                 if wallet_instance.proxy != wallet_data.proxy:
                     wallet_instance.proxy = wallet_data.proxy
+                    wallet_instance.proxy_status = "OK"
                     changed = True
 
                 if hasattr(wallet_instance, "twitter_token") and wallet_instance.twitter_token != wallet_data.twitter_token:
                     wallet_instance.twitter_token = wallet_data.twitter_token
-                    wallet_instance.twitter_status = None
+                    wallet_instance.twitter_status = "OK"
                     changed = True
 
                 if changed:
