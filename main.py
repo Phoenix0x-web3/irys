@@ -28,6 +28,7 @@ PROJECT_ACTIONS = [
     "3. Start Complete All Portals Games",
     "4. Start Complete Galxe Quests",
     "5. Start Onchain Actions",
+    "6. Run All Activities With Banned Accounts - No Subscribe to Galxe Premium",
     "Back",
 ]
 
@@ -94,6 +95,8 @@ async def choose_action():
 
     elif action == "5. Start Onchain Actions":
         await activity(action=5)
+    elif action == "6. Run All Activities With Banned Accounts - No Subscribe to Galxe Premium":
+        await activity(action=6)
 
     elif action == "1. Reset files Folder":
         console.print("This action will delete the files folder and reset it.")

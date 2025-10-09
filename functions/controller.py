@@ -74,4 +74,30 @@ class Controller:
         await self.quest_client.claim_rewards(galxe_client)
         await self.quest_client.update_points(galxe_client)
         return
+    
+    
+    async def complete_galxe_quests_with_banned_account(self):
+        galxe_client = GalxeClient(wallet=self.wallet, client=self.client)
+        
+        if await galxe_client.is_account_banned():
+            logger.warning(f"{self.wallet} banned: Galxe account is banned! Continuing quests without subscription")
+            mark_galxe_account_banned(id=self.wallet.id)
+
+        functions = [
+            self.quest_client.complete_twitter_galxe_quests,
+            self.quest_client.complete_spritetype_galxe_quests,
+            self.quest_client.complete_irysverse_quiz,
+            self.quest_client.complete_daily_irysverse_galxe_quests,
+            self.quest_client.complete_irys_other_games_quests,
+        ]
+        random.shuffle(functions)
+        for func in functions:
+            try:
+                await func(galxe_client)
+            except Exception:
+                continue
+ 
+        await self.quest_client.claim_rewards(galxe_client)
+        await self.quest_client.update_points(galxe_client)
+        return
 

@@ -91,6 +91,13 @@ async def activity(action: int):
     if action == 5 and wallets:
         await execute(wallets, complete_onchain_actions)
 
+    if action == 6 and wallets:
+        await execute(
+            wallets,
+            run_all_with_banned_account,
+            random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max),
+        )
+
 
 async def start_main_action(wallet):
     now = datetime.now()
@@ -167,6 +174,38 @@ async def complete_galxe_quests(wallet):
     controller = Controller(client=client, wallet=wallet)
 
     await controller.complete_galxe_quests()
+
+
+async def run_all_with_banned_account(wallet):
+    now = datetime.now()
+    if wallet.next_action_time and wallet.next_action_time >= now:
+        return
+
+    await random_sleep_before_start(wallet=wallet)
+
+    client = Client(private_key=wallet.private_key, proxy=wallet.proxy, network=Networks.Gravity)
+
+    controller = Controller(client=client, wallet=wallet)
+
+    functions = [
+        controller.complete_spritetype_games,
+        controller.complete_onchain,
+        controller.complete_portal_games,
+    ]
+    random.shuffle(functions)
+    for func in functions:
+        try:
+            await func()
+        except Exception:
+            continue
+    random_delay = random.randint(Settings().random_pause_wallet_after_all_completion_min, Settings().random_pause_wallet_after_all_completion_max)
+    next_time = now + timedelta(seconds=random_delay)
+    success_update = update_next_action_time(address=wallet.address, next_action_time=next_time)
+    await controller.complete_galxe_quests_with_banned_account()
+    if success_update:
+        logger.info(f"{wallet} Next action scheduled at {next_time}")
+    else:
+        logger.error(f"{wallet} Failed to update next_game_action_time")
 
 
 async def complete_onchain_actions(wallet):
