@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import csv
 from types import SimpleNamespace
 from typing import Dict, List, Optional
 
@@ -251,6 +252,7 @@ class Export:
             for line in lines:
                 f.write((line or "") + "\n")
 
+   
     @staticmethod
     async def wallets_to_txt() -> None:
         if not check_encrypt_param():
@@ -276,3 +278,50 @@ class Export:
             Export._write_lines(filename, buf[field])
 
         logger.success(f"Export: exported {len(wallets)} wallets in {FILES_DIR}")
+
+
+    @staticmethod
+    async def data_to_csv() -> None:
+        
+        if not check_encrypt_param():
+            logger.error(f"Decryption Failed | Wrong Password")
+            return
+
+        wallets: List[Wallet] = db.all(Wallet)
+
+        if not wallets:
+            logger.warning("Export: no wallets in db, skip....")
+            return
+
+        keys_set = set()
+        for w in wallets:
+            for k in getattr(w, "__dict__", {}).keys():
+                if not k.startswith("_"):
+                    keys_set.add(k)
+
+        preferred = [
+            "id",
+            "address",
+            "private_key",
+            "proxy",
+            "twitter_token",
+            
+        ]
+
+        fieldnames = [k for k in preferred if k in keys_set] + sorted(k for k in keys_set if k not in preferred)
+
+        path = os.path.join(FILES_DIR, "export_data.csv")
+        
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+            writer.writeheader()
+
+            for w in wallets:
+                row = {k: v for k, v in getattr(w, "__dict__", {}).items() if not k.startswith("_")}
+
+                if "private_key" in row:
+                    row["private_key"] = get_private_key(row["private_key"]) if Settings().private_key_encryption else row["private_key"]
+                   
+                writer.writerow(row)
+
+        logger.success(f"Export: Database to CSV | Wallets exported: {len(wallets)} | Path: {path}")
