@@ -107,11 +107,11 @@ def replace_bad_proxy(id: int, new_proxy: str) -> bool:
     return True
 
 
-def mark_galxe_account_banned(id: int) -> bool:
+def mark_galxe_account_banned(id: int, banned = True) -> bool:
     wallet = db.one(Wallet, Wallet.id == id)
     if not wallet:
         return False
-    wallet.galxe_account_banned = True
+    wallet.galxe_account_banned = banned
     db.commit()
     return True
 

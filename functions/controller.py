@@ -54,6 +54,9 @@ class Controller:
             mark_galxe_account_banned(id=self.wallet.id)
             return
         
+        if self.wallet.galxe_account_banned:
+            mark_galxe_account_banned(id=self.wallet.id, banned=False)
+        
         if await galxe_client.handle_subscribe():
             logger.success(f"{self.wallet} subscribed to Galxe Premium")
 
@@ -83,6 +86,9 @@ class Controller:
             logger.warning(f"{self.wallet} banned: Galxe account is banned! Continuing quests without subscription")
             mark_galxe_account_banned(id=self.wallet.id)
 
+        if self.wallet.galxe_account_banned:
+            mark_galxe_account_banned(id=self.wallet.id, banned=False)
+            
         functions = [
             self.quest_client.complete_twitter_galxe_quests,
             self.quest_client.complete_spritetype_galxe_quests,
