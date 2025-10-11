@@ -85,8 +85,7 @@ class Controller:
         if await galxe_client.is_account_banned():
             logger.warning(f"{self.wallet} banned: Galxe account is banned! Continuing quests without subscription")
             mark_galxe_account_banned(id=self.wallet.id)
-
-        if self.wallet.galxe_account_banned:
+        else:
             mark_galxe_account_banned(id=self.wallet.id, banned=False)
             
         functions = [
