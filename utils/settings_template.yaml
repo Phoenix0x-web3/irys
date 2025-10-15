@@ -64,10 +64,20 @@ random_eth_for_bridge:
 capmonster_api_key: ""
 #Buy galxe subscription. Need 2$ in Native. Available networks: Arbitrum, Base, Polygon, Bsc
 buy_galxe_subscription: True
-#OKX api keys. Using withdraw for buy Galxe subscription
-okx_api_key: ''
-okx_api_secret: ''
-okx_passphrase: ''
+
+# OKX / Bitget API keys. 
+# Used for withdrawals from the exchange to fund wallets.
+# In the "active" field, specify which exchange to use for withdrawals: okx or bitget.
+exchanges:
+  active: okx  # Choose the active exchange: okx or bitget
+  okx:
+    api_key: ""
+    api_secret: ""
+    passphrase: ""
+  bitget:
+    api_key: ""
+    api_secret: ""
+    passphrase: ""
 
 #Withdrawal amount in USD for galxe subscription
 withdrawal_amount:

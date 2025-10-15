@@ -6,7 +6,7 @@ import uuid
 
 from loguru import logger
 
-from data.models import okx_credentials
+from data.models import bitget_credentials, okx_credentials
 from data.settings import Settings
 from libs.base import Base
 from libs.eth_async.client import Client
@@ -14,6 +14,7 @@ from libs.eth_async.data.models import Network, Networks, TokenAmount
 from modules.encoder.galxe_utils import generate_ga_cookie_value, get_captcha, make_x_unique_link_id
 from utils.browser import Browser
 from utils.db_api.models import Wallet
+from utils.exchanger.bitget import BitgetActions
 from utils.exchanger.okx import OKXActions
 from utils.retry import async_retry
 
@@ -187,12 +188,31 @@ class GalxeClient:
     async def handle_bridge_subscribe(self):
         base_client = await self.choose_subscribe_client()
         if not base_client:
-            logger.warning(f"{self.wallet} no one Network can be choisen for bridge. Try withdraw from OKX")
-            withdraw_from_okx = await self.withdraw_from_okx()
-            if withdraw_from_okx:
-                await asyncio.sleep(10)
-                return await self.handle_bridge_subscribe()
-            return False
+            logger.warning(f"{self.wallet} no one Network can be choisen for bridge. Try withdraw from Exchange")
+
+            exchange = (Settings().exchange_active or "").strip().lower()
+            handlers = {
+                "okx": self.withdraw_from_okx,
+                "bitget": self.withdraw_from_bitget,
+            }
+
+            handler = handlers.get(exchange)
+            if not handler:
+                logger.warning(f"{self.wallet} unsupported exchange in settings: '{exchange}'. Skipping exchange withdraw.")
+                return False
+
+            try:
+                success = await handler()
+            except Exception as e:
+                logger.error(f"{self.wallet} withdraw via '{exchange}' failed: {e}")
+                return False
+
+            if not success:
+                return False
+
+            await asyncio.sleep(10)
+            return await self.choose_client_for_subscription()
+
         network_values = [Networks.Arbitrum, Networks.Base, Networks.Polygon, Networks.BSC]
         if base_client.client.network in network_values:
             return True
@@ -222,7 +242,7 @@ class GalxeClient:
             logger.warning(f"{self.wallet} Fill OKX credentials for withdraw in settings.yaml")
             return False
         okx_actions = OKXActions(credentials=okx_credentials)
-        network, amount_to_withdraw = await self.choose_available_client_for_withdraw(okx_client=okx_actions)
+        network, amount_to_withdraw = await self.choose_available_okx_client_for_withdraw(okx_client=okx_actions)
         if not network or not amount_to_withdraw:
             logger.warning(f"{self.wallet} can't choose any network for withdraw from OKX")
             return False
@@ -234,7 +254,29 @@ class GalxeClient:
         if not withdraw:
             return False
         logger.success(
-            f"{self.wallet} succes withdraw {amount_to_withdraw} {network.coin_symbol} to {network.name} network. Withdrawal ID: {withdraw}"
+            f"{self.wallet} success withdraw {amount_to_withdraw} {network.coin_symbol} to {network.name} network. Withdrawal ID: {withdraw}"
+        )
+        return await self.wait_deposit(client=client, start_balance=start_balance)
+
+    @async_retry()
+    async def withdraw_from_bitget(self):
+        if not bitget_credentials.completely_filled():
+            logger.warning(f"{self.wallet} Fill Bitget credentials for withdraw in settings.yaml")
+            return False
+        bitget_actions = BitgetActions(credentials=bitget_credentials)
+        network, amount_to_withdraw = await self.choose_available_bitget_client_for_withdraw(bitget_client=bitget_actions)
+        if not network or not amount_to_withdraw:
+            logger.warning(f"{self.wallet} can't choose any network for withdraw from Bitget")
+            return False
+        client = Client(private_key=self.client.account._private_key.hex(), network=network, proxy=self.wallet.proxy)
+        start_balance = await client.wallet.balance()
+        withdraw = await bitget_actions.withdraw(
+            to_address=self.wallet.address, amount=amount_to_withdraw, token_symbol=network.coin_symbol, chain=network.name
+        )
+        if not withdraw:
+            return False
+        logger.success(
+            f"{self.wallet} success withdraw {amount_to_withdraw} {network.coin_symbol} to {network.name} network. Withdrawal ID: {withdraw}"
         )
         return await self.wait_deposit(client=client, start_balance=start_balance)
 
@@ -249,7 +291,7 @@ class GalxeClient:
         coingecko_data = coingecko_request.json()
         return coingecko_data[token]["usd"]
 
-    async def choose_available_client_for_withdraw(self, okx_client: OKXActions):
+    async def choose_available_okx_client_for_withdraw(self, okx_client: OKXActions):
         network_values = [value for key, value in Networks.__dict__.items() if isinstance(value, Network)]
         random.shuffle(network_values)
         eth_price = None
@@ -274,6 +316,39 @@ class GalxeClient:
                 logger.debug(min_withdrawal)
                 if get_fee and get_balance - get_fee < amount_to_withdraw or not min_withdrawal or min_withdrawal > amount_to_withdraw:
                     continue
+                return network, amount_to_withdraw
+
+        return None, None
+
+    async def choose_available_bitget_client_for_withdraw(self, bitget_client: BitgetActions):
+        network_values = [value for key, value in Networks.__dict__.items() if isinstance(value, Network)]
+        random.shuffle(network_values)
+        eth_price = None
+        for network in network_values:
+            if network.name in Settings().network_for_withdraw:
+                get_balance = await bitget_client.get_master_acc_balance(token_symbol=network.coin_symbol)
+                logger.debug(float(get_balance))
+                if get_balance == 0:
+                    continue
+
+                if network.coin_symbol == "ETH":
+                    if eth_price is None:
+                        coingecko_price = await self.get_coingecko_price(network_name=network.name)
+                        eth_price = coingecko_price
+                    else:
+                        coingecko_price = eth_price
+                else:
+                    coingecko_price = await self.get_coingecko_price(network_name=network.name)
+
+                random_withdraw_amount_usd = random.uniform(Settings().withdrawal_amount_min, Settings().withdrawal_amount_max)
+                amount_to_withdraw = float(random_withdraw_amount_usd) / float(coingecko_price)
+                get_fee = await bitget_client.get_withdrawal_fee(token_symbol=network.coin_symbol, chain=network.name)
+                logger.debug(get_fee)
+                min_withdrawal = await bitget_client.get_minimal_withdrawal(token_symbol=network.coin_symbol, chain=network.name)
+                logger.debug(min_withdrawal)
+                if (get_fee and get_balance - get_fee < amount_to_withdraw) or (not min_withdrawal or min_withdrawal > amount_to_withdraw):
+                    continue
+
                 return network, amount_to_withdraw
 
         return None, None
