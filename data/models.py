@@ -5,6 +5,7 @@ from data.settings import Settings
 from libs.eth_async.classes import Singleton
 from libs.eth_async.data.models import DefaultABIs, RawContract
 from libs.eth_async.utils.files import read_json
+from libs.exchanger.bitget.models import BitgetCredentials
 from libs.exchanger.okx.models import OKXCredentials
 
 
@@ -27,12 +28,5 @@ class FromTo:
     to_: int | float
 
 
-class OkxModel:
-    required_minimum_balance: float
-    withdraw_amount: FromTo
-    delay_between_withdrawals: FromTo
-    credentials: OKXCredentials
-
-
-okx = OkxModel()
 okx_credentials = OKXCredentials(api_key=settings.okx_api_key, secret_key=settings.okx_api_secret, passphrase=settings.okx_passphrase)
+bitget_credentials = BitgetCredentials(api_key=settings.bitget_api_key, secret_key=settings.bitget_api_secret, passphrase=settings.bitget_passphrase)

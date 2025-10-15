@@ -44,9 +44,16 @@ class Settings(Singleton):
         self.multiple_mint = json_data.get("multiple_mint", False)
         self.buy_galxe_subscription = json_data.get("buy_galxe_subscription", True)
 
-        self.okx_api_key = json_data.get("okx_api_key", "")
-        self.okx_api_secret = json_data.get("okx_api_secret", "")
-        self.okx_passphrase = json_data.get("okx_passphrase", "")
+        self.exchange_active = (json_data.get("exchanges", {}).get("active") or "bitget").lower()
+
+        self.okx_api_key = json_data.get("exchanges", {}).get("okx", {}).get("api_key", "")
+        self.okx_api_secret = json_data.get("exchanges", {}).get("okx", {}).get("api_secret", "")
+        self.okx_passphrase = json_data.get("exchanges", {}).get("okx", {}).get("passphrase", "")
+
+        self.bitget_api_key = json_data.get("exchanges", {}).get("bitget", {}).get("api_key", "")
+        self.bitget_api_secret = json_data.get("exchanges", {}).get("bitget", {}).get("api_secret", "")
+        self.bitget_passphrase = json_data.get("exchanges", {}).get("bitget", {}).get("passphrase", "")
+
         self.withdrawal_amount_min = json_data.get("withdrawal_amount", {}).get("min")
         self.withdrawal_amount_max = json_data.get("withdrawal_amount", {}).get("max")
         self.network_for_withdraw = json_data.get("network_for_withdraw", [])
