@@ -30,9 +30,6 @@ class Controller:
             return await self.irys_client.handle_arcade_game()
 
     async def complete_spritetype_games(self):
-        if self.wallet.completed_games and self.wallet.completed_games >= 1000:
-            logger.info(f"{self.wallet} already have {self.wallet.completed_games} sprite type games")
-            return False
         return await self.irys_client.handle_spritetype_game()
 
     async def complete_onchain(self):
