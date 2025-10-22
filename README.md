@@ -132,7 +132,7 @@ auto_replace_proxy: true
 # Api Key from https://dash.capmonster.cloud/
 capmonster_api_key: ""
 
-#OKX api keys. Using withdraw for buy Galxe subscription
+# OKX api keys. Using withdraw for buy Galxe subscription
 okx_api_key: ''
 okx_api_secret: ''
 okx_passphrase: ''
