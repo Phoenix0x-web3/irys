@@ -868,7 +868,7 @@ class GalxeClient:
             "operationName": "redeemToken",
             "variables": {
                 "input": {
-                    "tokenAmount": token_amount,
+                    "tokenAmount": str(token_amount),
                     "redeemAddress": f"{self.wallet.address}",
                     "tokenId": token_id,
                     "timestamp": time_for_request,
