@@ -384,7 +384,7 @@ class GalxeClient:
     async def handle_bridge_gravity(self):
         base_client = await self.choose_available_client()
         if not base_client:
-            logger.warning(f"{self.wallet} no one Network can be choisen for ETH transfer")
+            logger.warning(f"{self.wallet} no one Network can be chosen for ETH transfer")
             return False
         start_balance = await self.client.wallet.balance()
         amount_for_bridge = random.uniform(Settings().random_eth_for_bridge_min, Settings().random_eth_for_bridge_max)
