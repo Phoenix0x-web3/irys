@@ -100,7 +100,7 @@ exact_wallets_to_run: []
 # Show wallet address in logs
 show_wallet_address_logs: false
 
-#Check for github updates
+# Check for github updates
 check_git_updates: true
 
 # the log level for the application. Options: DEBUG, INFO, WARNING, ERROR
