@@ -79,6 +79,7 @@ class IrysOnchain(Base):
     async def wait_deposit(self, start_balance: TokenAmount):
         timeout = 60 * 30
         start_time = time.time()
+        logger.info(f"{self.wallet} waiting for faucet")
 
         while True:
             elapsed = time.time() - start_time
@@ -86,7 +87,6 @@ class IrysOnchain(Base):
                 logger.warning(f"{self.wallet} faucet did not arrive after {timeout} seconds")
                 return False
 
-            logger.info(f"{self.wallet} waiting for faucet (elapsed: {int(elapsed)}s)")
             balance = await self.client.wallet.balance()
 
             if start_balance.Wei < balance.Wei:
